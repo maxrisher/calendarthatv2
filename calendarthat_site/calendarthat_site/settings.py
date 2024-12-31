@@ -81,7 +81,7 @@ WSGI_APPLICATION = 'calendarthat_site.wsgi.application'
 
 DATABASES = {
     'default': dj_database_url.config(
-        default=os.environ.get('DATABASE_PUBLIC_URL')
+        default=os.environ.get('DATABASE_PUBLIC_URL'),
         conn_max_age=600
     )
 }
