@@ -1,0 +1,10 @@
+{% extends "web_interface/base.html" %} 
+
+{% block content %}
+{% if user.is_authenticated %}
+  Hi {{ user.email }}!
+  <p><a href="{% url 'account_logout' %}">Log Out</a></p>
+{% else %}
+  <p>You are not logged in</p>
+{% endif %}
+{% endblock %}

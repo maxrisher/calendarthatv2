@@ -1,5 +1,5 @@
 # CalendarThat V2
-CalendarThat is a web service which aims to convert any 
+CalendarThat is a web service which aims to convert any text into a calendar event. Eg. "Lunch with Sarah next Tuesday at 1pm at Cafe Luna" -> .ics file
 
 # Web front end
 ### User sign up page
@@ -47,3 +47,6 @@ job: performs the core logic for creating calendar events from text and optional
 - Convert PDFs to calendar events (OCR them, then send them to the core logic)
 - Deal with multiple calendar events in the same input (Ask an LLM if more than one event exists in the text, if yes, create many individual events)
 - Convert images to calendar events (OCR them to text, then send them to the core logic)
+
+# Resources used
+authentication setup with this tutorial: https://learndjango.com/tutorials/django-allauth-tutorial
