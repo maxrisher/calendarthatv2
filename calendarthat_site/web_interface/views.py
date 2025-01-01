@@ -1,11 +1,20 @@
 from django.shortcuts import render
 
-# Create your views here.
+from accounts.models import CustomUser
 
 def home(request):
     return render(request, 'web_interface/home.html')
 
 async def create_event_web(request):
+    user = request.auser
+    email = None
+    if user.is_authenticated:
+        email = user.email
+    else:
+        pass
+
+
+
     # test if the user is authenticated; get their details if so
 
     # create a new event request in the database
