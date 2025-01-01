@@ -38,6 +38,9 @@ job: performs the core logic for creating calendar events from text and optional
 - Holds all past created events: start time, end time, location, etc.
 
 # Future work / next steps
+## Short term TODOs
+- Rate limit requests from anonymous users
+
 ## Modalities
 - Accept email input and output
 - Accept WhatsApp input and output
@@ -50,3 +53,6 @@ job: performs the core logic for creating calendar events from text and optional
 
 # Resources used
 authentication setup with this tutorial: https://learndjango.com/tutorials/django-allauth-tutorial
+
+# Helpful reading
+async django: https://jonathanadly.com/is-async-django-ready-for-prime-time
