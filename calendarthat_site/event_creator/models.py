@@ -17,6 +17,7 @@ class Event(models.Model):
         default=uuid.uuid4,
         editable=False,
     )
+    
     custom_user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -47,6 +48,8 @@ class Event(models.Model):
         blank=True,
     )    
 
+    user_input = models.TextField()
+
     date_start = models.DateTimeField(
         null=True,
         blank=True,
@@ -59,19 +62,21 @@ class Event(models.Model):
     )
 
     summary = models.CharField(
+        null=True,
+        blank=True,
         max_length=255,
-        help_text="Short summary or title of the event."
     )
     
     location = models.CharField(
+        null=True,
+        blank=True,
         max_length=255,
         blank=True,
-        help_text="Location of the event."
     )
     
     description = models.TextField(
+        null=True,
         blank=True,
-        help_text="Detailed description of the event."
     )
 
     def __str__(self):

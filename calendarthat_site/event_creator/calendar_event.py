@@ -21,3 +21,7 @@
 # to_gcal_link creates a gcal link
 
 # to_outlook_link creates an outlook link
+
+class CalendarEvent:
+    def __init__(self, event_id):
+        self.event_id = event_id
