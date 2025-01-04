@@ -58,7 +58,6 @@ class Event(models.Model):
     date_end = models.DateTimeField(
         null=True,
         blank=True,
-        help_text="Event end date and time."
     )
 
     summary = models.CharField(

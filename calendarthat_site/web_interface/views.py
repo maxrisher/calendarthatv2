@@ -6,7 +6,7 @@ from django.http import JsonResponse
 
 from accounts.models import CustomUser
 from event_creator.models import Event
-from calendarthat_site.event_creator.new_event import NewEvent
+from event_creator.new_event import NewEvent
 
 def home(request):
     return render(request, 'web_interface/home.html')
@@ -15,7 +15,7 @@ async def create_event_web(request):
     user = await request.auser()
     event_text = request.POST.get('event_text', '')
     
-    event_id = uuid.uuid4
+    event_id = uuid.uuid4()
 
     # create a new event request in the database
     await Event.objects.acreate(
