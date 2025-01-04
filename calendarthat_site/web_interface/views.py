@@ -35,13 +35,13 @@ async def create_event_web(request):
 
 def get_event_status(request):
     # Check on the status of the event
-    return {
+    return JsonResponse({
         "build_status": "STARTED"
-    }
+    })
 
 def download_calendar_event(request):
     # Download the calendar event
-    return JsonReponse({
+    return JsonResponse({
         "gcal_link": "https://calendar.google.com/calendar/render?action=TEMPLATE&text=Team+Meeting&dates=20250105T150000Z/20250105T160000Z&details=Discuss+project+milestones+and+set+next+steps.&location=Office+Room+101&sf=true&output=xml",
         "outlook_link": "https://outlook.live.com/calendar/0/deeplink/compose?subject=Team+Meeting&body=Discuss+project+milestones+and+set+next+steps.&startdt=2025-01-05T15:00:00Z&enddt=2025-01-05T16:00:00Z&location=Office+Room+101",
         "ics_data": "BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//Calendar Event Generator//example.com//\nBEGIN:VEVENT\nSUMMARY:Team Meeting\nDTSTART:20250105T150000Z\nDTEND:20250105T160000Z\nDTSTAMP:20250104T000000Z\nDESCRIPTION:Discuss project milestones and set next steps.\nLOCATION:Office Room 101\nEND:VEVENT\nEND:VCALENDAR"
