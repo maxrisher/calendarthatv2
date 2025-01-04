@@ -18,7 +18,7 @@ async def create_event_web(request):
     event_id = uuid.uuid4
 
     # create a new event request in the database
-    Event.objects.acreate(
+    await Event.objects.acreate(
         uuid=event_id, 
         custom_user=user if user.is_authenticated else None, 
         user_input=event_text
