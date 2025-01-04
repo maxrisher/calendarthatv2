@@ -1,12 +1,12 @@
-from django.shortcuts import render
-from django.http import JsonResponse
-
 import uuid
 import asyncio
 
+from django.shortcuts import render
+from django.http import JsonResponse
+
 from accounts.models import CustomUser
 from event_creator.models import Event
-from event_creator.calendar_event import CalendarEvent
+from calendarthat_site.event_creator.new_event import NewEvent
 
 def home(request):
     return render(request, 'web_interface/home.html')
@@ -25,7 +25,7 @@ async def create_event_web(request):
         )
 
     # create and start running an async task to process the request, passing our request id
-    new_event = CalendarEvent(event_id, event_text)
+    new_event = NewEvent(event_id, event_text)
     asyncio.create_task(new_event.formalize())
 
     # return the task ID to the user

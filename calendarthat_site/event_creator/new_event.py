@@ -21,27 +21,17 @@
 # to_gcal_link creates a gcal link
 
 # to_outlook_link creates an outlook link
+from datetime import datetime, timezone
+import asyncio
 
 from event_creator.models import Event
-from datetime import datetime, timezone
 
-class CalendarEvent:
+class NewEvent:
     #get the event from our database
     def __init__(self, event_id, user_input):
         self.event_id = event_id
-        self.db_event = Event.objects.get(uuid=event_id)
-        self.timezone_name = None
-        if self.db_event.custom_user is not None:
-            self.timezone_name = self.db_event.custom_user.timezone_name
-
-        self.build_start = self.db_event.build_start
-        self.user_input = self.db_event.user_input
-        # The following are the properties that are set by formalization (ie turning a text event into a formal .ical)
-        self.date_start = self.db_event.date_start
-        self.date_end = self.db_event.date_end
-        self.summary = self.db_event.summary
-        self.location = self.db_event.location
-        self.description = self.db_event.description
+        self.user_input = user_input
+        self.db_event = Event.objects.get(uuid=event_id)        
 
     async def formalize(self):
         await asyncio.sleep(5)
@@ -54,18 +44,10 @@ class CalendarEvent:
         # ...
         
         # The in-memory event effects
-        self.date_start = datetime(2025, 1, 1, 13, 0, tzinfo=timezone.utc),
-        self.date_end = datetime(2025, 1, 1, 14, 0, tzinfo=timezone.utc),
-        self.summary = "Lunch at your mom's house"
-        self.location = "London SW1A 1AA, United Kingdom"
-        self.description = "An outstanding afternoon tea"
-
-        # The database effects
-        self.db_event.date_start = self.date_start
-        self.db_event.date_end = self.date_end
-        self.db_event.summary = self.summary
-        self.db_event.location = self.location
-        self.db_event.description = self.description
-
+        self.db_event.date_start = datetime(2025, 1, 1, 13, 0, tzinfo=timezone.utc),
+        self.db_event.date_end = datetime(2025, 1, 1, 14, 0, tzinfo=timezone.utc),
+        self.db_event.summary = "Lunch at your mom's house"
+        self.db_event.location = "London SW1A 1AA, United Kingdom"
+        self.db_event.description = "An outstanding afternoon tea"
         self.db_event.build_status = "DONE"
         self.db_event.build_time = datetime.now(timezone.utc) - self.build_start
