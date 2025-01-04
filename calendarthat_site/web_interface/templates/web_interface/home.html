@@ -3,18 +3,34 @@
 {% block content %}
 {% if user.is_authenticated %}
   Hi {{ user.email }}!
-  <p><a href="{% url 'account_logout' %}">Log Out</a></p>
 {% else %}
   <p>You are not logged in</p>
 {% endif %}
 
-<h1>Paste your text here</h1>
-
+<h2>Paste your event text here</h2>
 <form method="POST" action="{% url 'create_event_web' %}">
     {% csrf_token %}
     <textarea name="event_text" rows="5" cols="60"></textarea>
-    <br><br>
+    <br>
     <button type="submit">Create Event</button>
+</form>
+<br>
+<br>
+<h2>Paste the uuid of the event to check on here</h2>
+<form method="GET" action="{% url 'get_event_status' %}">
+  {% csrf_token %}
+  <textarea name="event_uuid" rows="5" cols="60"></textarea>
+  <br>
+  <button type="submit">Check status</button>
+</form>
+<br>
+<br>
+<h2>Paste the uuid of the event to download here</h2>
+<form method="GET" action="{% url 'download_calendar_event' %}">
+  {% csrf_token %}
+  <textarea name="event_uuid" rows="5" cols="60"></textarea>
+  <br>
+  <button type="submit">Download</button>
 </form>
 
 {% endblock %}

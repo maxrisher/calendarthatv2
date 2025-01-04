@@ -37,7 +37,7 @@ class NewEvent:
     async def formalize(self):
         print("Started task: ", str(self.event_id)[:5])
         self.db_event = await Event.objects.aget(uuid=self.event_id)        
-        await asyncio.sleep(5)
+        await asyncio.sleep(15)
         
         # Create an LLMCaller
         # llm_caller = LlmCaller()
