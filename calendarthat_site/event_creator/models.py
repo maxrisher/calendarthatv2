@@ -71,7 +71,6 @@ class Event(models.Model):
         null=True,
         blank=True,
         max_length=255,
-        blank=True,
     )
     
     description = models.TextField(

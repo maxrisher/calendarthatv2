@@ -7,4 +7,14 @@
 {% else %}
   <p>You are not logged in</p>
 {% endif %}
+
+<h1>Paste your text here</h1>
+
+<form method="POST" action="{% url 'create_event_web' %}">
+    {% csrf_token %}
+    <textarea name="event_text" rows="5" cols="60"></textarea>
+    <br><br>
+    <button type="submit">Create Event</button>
+</form>
+
 {% endblock %}
