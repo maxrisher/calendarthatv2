@@ -31,7 +31,7 @@ class NewEvent:
     def __init__(self, event_id, user_input):
         self.event_id = event_id
         self.user_input = user_input
-        self.db_event = Event.objects.get(uuid=event_id)        
+        self.db_event = Event.objects.aget(uuid=event_id)        
 
     async def formalize(self):
         await asyncio.sleep(5)
