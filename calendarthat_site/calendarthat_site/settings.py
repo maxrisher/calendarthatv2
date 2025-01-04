@@ -159,4 +159,4 @@ ACCOUNT_UNIQUE_EMAIL = True
 LOGIN_REDIRECT_URL = "home"
 ACCOUNT_LOGOUT_REDIRECT_URL = "home"
 
-CSRF_TRUSTED_ORIGINS = ["calendarthatv2-production.up.railway.app"]
+CSRF_TRUSTED_ORIGINS = ["https://calendarthatv2-production.up.railway.app"]
