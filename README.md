@@ -1,6 +1,12 @@
 # CalendarThat V2
 CalendarThat is a web service which aims to convert any text into a calendar event. Eg. "Lunch with Sarah next Tuesday at 1pm at Cafe Luna" -> .ics file
 
+# Deployment
+## Local
+Use the command "python -m uvicorn myproject.asgi:application" when you are in the calendarthat_site directory to start the asgi server locally
+
+## Railway
+
 # Web front end
 ### User sign up page
 ### User login page
