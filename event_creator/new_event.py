@@ -26,6 +26,7 @@ import zoneinfo
 import asyncio
 
 from event_creator.models import Event
+from event_creator.llm_caller import LlmCaller
 
 class NewEvent:
     #get the event from our database
@@ -36,22 +37,24 @@ class NewEvent:
 
     async def formalize(self):
         print("Started task: ", str(self.event_id)[:5])
-        self.db_event = await Event.objects.aget(uuid=self.event_id)        
-        await asyncio.sleep(15)
+        self.db_event = await Event.objects.aget(uuid=self.event_id)       
+        use_timezone_name = self.db_event.custom_user.email if self.db_event.custom_user is not None else None
         
         # Create an LLMCaller
-        # llm_caller = LlmCaller()
+        llm_caller = LlmCaller()
+
+        await llm_caller.text_to_ics(self.user_input, use_timezone_name)
         # Ask our LLMCaller to .text_to_ics(self.user_input)
         # llm_caller.text_to_ics(self.user_input, self.timezone_name)
         # self.date_start = llm_caller.response.get('date_start')
         # ...
         
         # The in-memory event effects
-        self.db_event.date_start = datetime(2025, 1, 1, 13, 0, tzinfo=zoneinfo.ZoneInfo("America/Los_Angeles"))
-        self.db_event.date_end = datetime(2025, 1, 1, 14, 0, tzinfo=zoneinfo.ZoneInfo("America/Los_Angeles"))
-        self.db_event.summary = "Lunch at your mom's house"
-        self.db_event.location = "London SW1A 1AA, United Kingdom"
-        self.db_event.description = "An outstanding afternoon tea"
+        self.db_event.date_start = llm_caller.response.get('date_start')
+        self.db_event.date_end = llm_caller.response.get('date_end')
+        self.db_event.summary = llm_caller.response.get('summary')
+        self.db_event.location = llm_caller.response.get('location')
+        self.db_event.description = llm_caller.response.get('description')
         self.db_event.build_status = "DONE"
         self.db_event.build_time = datetime.now(timezone.utc) - self.db_event.build_start
 

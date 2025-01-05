@@ -49,8 +49,7 @@ class LlmCaller:
         with open('event_creator/00_user_text_to_ics_v1.txt', 'r') as file:
             blank_user_prompt = file.read()
 
-        # utc_time = timezone.now()
-        utc_time = "2025-01-04 12:34:56.789123+00:00"
+        utc_time = timezone.now().strftime('%Y-%m-%dT%H:%M') #NB: this is just to the minutes level of precision
 
         user_prompt = blank_user_prompt.format(
             utc_time,
@@ -89,7 +88,7 @@ def extract_first_xml(body_of_text, xml_tag):
     clean_xml_content = matches[0].strip()
     return clean_xml_content
 
-llm_caller = LlmCaller()
-import asyncio
-asyncio.run(llm_caller.text_to_ics("dmv appointment on the 23rd"))
-print(llm_caller.response)
+# llm_caller = LlmCaller()
+# import asyncio
+# asyncio.run(llm_caller.text_to_ics("dmv appointment on the 23rd"))
+# print(llm_caller.response)

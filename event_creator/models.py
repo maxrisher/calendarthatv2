@@ -2,6 +2,7 @@ from django.db import models
 from django.conf import settings
 
 import uuid
+from urllib import quote
 
 # Event model
 # Represents an event with details like:
@@ -79,7 +80,15 @@ class Event(models.Model):
 
     @property
     def gcal_link(self):
-        return "https://calendar.google.com/calendar/render?action=TEMPLATE&text=Team+Meeting&dates=20250105T150000Z/20250105T160000Z&details=Discuss+project+milestones+and+set+next+steps.&location=Office+Room+101&sf=true&output=xml"
+        url_summary = quote(self.summary)
+
+        url_dtstart = quote(self.summary)
+        url_dtend = quote(self.summary)
+
+        url_description = quote(self.description)
+        url_location = quote(self.location)
+        link = f"https://calendar.google.com/calendar/render?action=TEMPLATE&text={url_summary}&dates={url_dtstart}/{url_dtend}&details={url_description}&location={url_location}&sf=true&output=xml"
+        # return "https://calendar.google.com/calendar/render?action=TEMPLATE&text=Team+Meeting&dates=20250105T150000Z/20250105T160000Z&details=Discuss+project+milestones+and+set+next+steps.&location=Office+Room+101&sf=true&output=xml"
 
     @property
     def outlook_link(self):
