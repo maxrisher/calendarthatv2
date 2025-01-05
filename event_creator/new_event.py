@@ -48,7 +48,7 @@ class NewEvent:
         
         # The in-memory event effects
         self.db_event.date_start = datetime(2025, 1, 1, 13, 0, tzinfo=zoneinfo.ZoneInfo("America/Los_Angeles"))
-        self.db_event.date_start = datetime(2025, 1, 1, 14, 0, tzinfo=zoneinfo.ZoneInfo("America/Los_Angeles"))
+        self.db_event.date_end = datetime(2025, 1, 1, 14, 0, tzinfo=zoneinfo.ZoneInfo("America/Los_Angeles"))
         self.db_event.summary = "Lunch at your mom's house"
         self.db_event.location = "London SW1A 1AA, United Kingdom"
         self.db_event.description = "An outstanding afternoon tea"
