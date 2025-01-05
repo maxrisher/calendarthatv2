@@ -62,12 +62,15 @@ class LlmCaller:
 
     def _clean_response(self):
         timezone_name = extract_first_xml(self._raw_response, "timezone_name")
-
         raw_start_date = extract_first_xml(self._raw_response, "dtstart")
-        self.response["date_start"] = datetime.fromisoformat(raw_start_date).replace(tzinfo=ZoneInfo(timezone_name))
-
         raw_end_date = extract_first_xml(self._raw_response, "dtend")
-        self.response["date_end"] = datetime.fromisoformat(raw_end_date).replace(tzinfo=ZoneInfo(timezone_name))
+        
+        if len(timezone_name) == 0:
+            self.response["date_start"] = datetime.fromisoformat(raw_start_date)
+            self.response["date_end"] = datetime.fromisoformat(raw_end_date)
+        else:
+            self.response["date_start"] = datetime.fromisoformat(raw_start_date).replace(tzinfo=ZoneInfo(timezone_name))
+            self.response["date_end"] = datetime.fromisoformat(raw_end_date).replace(tzinfo=ZoneInfo(timezone_name))
 
         summary = extract_first_xml(self._raw_response, "title")
         self.response["summary"] = summary
@@ -86,7 +89,7 @@ def extract_first_xml(body_of_text, xml_tag):
     clean_xml_content = matches[0].strip()
     return clean_xml_content
 
-# llm_caller = LlmCaller()
-# import asyncio
-# asyncio.run(llm_caller.text_to_ics("dmv appointment on the 23rd", "America/Los_Angeles"))
-# print(llm_caller.response)
+llm_caller = LlmCaller()
+import asyncio
+asyncio.run(llm_caller.text_to_ics("dmv appointment on the 23rd"))
+print(llm_caller.response)
