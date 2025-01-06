@@ -1,34 +1,81 @@
 # CalendarThat API Documentation
 
+## Overview
+CalendarThat provides a RESTful API for creating calendar events from natural language text and retrieving them in multiple formats. The API supports both authenticated and anonymous users, with authenticated users benefiting from timezone-aware event creation.
+
 ## Endpoints
 
-### Create Calendar Event
-`POST /api/events/create-without-auth`
+### Create Event
+`POST /create/`
 
-Creates a calendar event from natural language text and returns a download URL.
+Creates a new calendar event from natural language text and begins asynchronous processing.
 
 **Request Body:**
 ```json
 {
-    "text": "Lunch with Sarah next Tuesday at 1pm at Cafe Luna"
+    "event_text": "Lunch with Sarah next Tuesday at 1pm at Cafe Luna"
 }
 ```
 
 **Success Response (200):**
 ```json
 {
-    "download_url": "/api/events/download/evt_123abc.ics"
+    "event_uuid": "123e4567-e89b-12d3-a456-426614174000"
 }
 ```
-Note that the download url has an ID string in it (evnt_123abc) to identify the calendar event. Hopefully this will make debugging later easier.
 
-**Error Response (400):**
+**Notes:**
+- For authenticated users, the user's timezone will be used for event creation
+- For anonymous users, events will be created without timezone information
+- Processing happens asynchronously; use the returned UUID to check status
+
+### Check Event Status
+`GET /event_status/?event_uuid={uuid}`
+
+Checks the processing status of a previously created event.
+
+**Parameters:**
+- `event_uuid`: UUID of the event (required)
+
+**Success Response (200):**
 ```json
 {
-    "error": "Could not create calendar event"
+    "build_status": "STARTED|DONE|FAILED"
 }
 ```
 
+**Notes:**
+- Status will be one of three values:
+  - `STARTED`: Initial state, processing in progress
+  - `DONE`: Processing completed successfully
+  - `FAILED`: Processing failed
+
+### Download Calendar Event
+`GET /download/?event_uuid={uuid}`
+
+Retrieves calendar event data in multiple formats.
+
+**Parameters:**
+- `event_uuid`: UUID of the event (required)
+
+**Success Response (200):**
+```json
+{
+    "gcal_link": "https://calendar.google.com/calendar/render?action=TEMPLATE&...",
+    "outlook_link": "https://outlook.live.com/calendar/0/deeplink/compose?...",
+    "ics_data": "BEGIN:VCALENDAR\nVERSION:2.0\n..."
+}
+```
+
+**Response Fields:**
+- `gcal_link`: Direct link to add event to Google Calendar
+- `outlook_link`: Direct link to add event to Outlook Calendar
+- `ics_data`: Raw iCalendar format data (RFC 5545 compliant)
+
 ## Technical Notes
-- All times in generated .ics files will be created without timezone information to use client local time
-- Event IDs in download URLs should be URL-safe
+- All endpoints currently support anonymous access
+- Events are processed asynchronously to handle potential LLM processing delays
+- The API follows RESTful principles and communicates using JSON
+- Calendar data is provided in multiple formats to support various client implementations
+- Authenticated users' events are associated with their account and use their timezone
+- The API currently does not implement rate limiting, but it will be added in the future for anonymous users
