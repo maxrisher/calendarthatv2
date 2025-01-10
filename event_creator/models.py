@@ -3,7 +3,7 @@ from django.conf import settings
 
 import uuid
 import urllib.parse
-# from urllib import quote
+from datetime import datetime
 
 # Event model
 # Represents an event with details like:
@@ -52,15 +52,29 @@ class Event(models.Model):
 
     user_input = models.TextField()
 
-    date_start = models.DateTimeField(
+    start_dttm_aware = models.DateTimeField(
         null=True,
         blank=True,
     )    
 
-    date_end = models.DateTimeField(
+    # in this format YYYY-MM-DDThh:mm:ss
+    start_dttm_naive = models.CharField(
+        max_length=25,
+        null=True,
+        blank=True,
+        )
+
+    end_dttm_aware = models.DateTimeField(
         null=True,
         blank=True,
     )
+
+    # in this format YYYY-MM-DDThh:mm:ss
+    end_dttm_naive = models.CharField(
+        max_length=25,
+        null=True,
+        blank=True,
+        )
 
     summary = models.CharField(
         null=True,
@@ -80,17 +94,30 @@ class Event(models.Model):
     )
 
     @property
+    def is_aware(self):
+        if self.start_dttm_aware is not None and self.end_dttm_aware is not None:
+            return True
+        else:
+            return False
+
+    @property
     def gcal_link(self):
-        return "https://calendar.google.com/calendar/render?action=TEMPLATE&text=Team+Meeting&dates=20250105T150000Z/20250105T160000Z&details=Discuss+project+milestones+and+set+next+steps.&location=Office+Room+101&sf=true&output=xml"
+        url_summary = urllib.parse.quote(self.summary)
+        url_description = urllib.parse.quote(self.description)
+        url_location = urllib.parse.quote(self.location)
 
-        url_summary = quote(self.summary)
+        if self.is_aware:
+            url_dtstart = self.start_dttm_aware.strftime("%Y%m%dT%H%M%SZ")
+            url_dtend = self.end_dttm_aware.strftime("%Y%m%dT%H%M%SZ")
+        else:
+            start_dttm = datetime.fromisoformat(self.start_dttm_naive)
+            end_dttm = datetime.fromisoformat(self.end_dttm_naive)
 
-        url_dtstart = quote(self.summary)
-        url_dtend = quote(self.summary)
+            url_dtstart = start_dttm.strftime("%Y%m%dT%H%M%S")
+            url_dtend = end_dttm.strftime("%Y%m%dT%H%M%S")
 
-        url_description = quote(self.description)
-        url_location = quote(self.location)
         link = f"https://calendar.google.com/calendar/render?action=TEMPLATE&text={url_summary}&dates={url_dtstart}/{url_dtend}&details={url_description}&location={url_location}&sf=true&output=xml"
+        return link
 
     @property
     def outlook_link(self):

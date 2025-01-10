@@ -49,9 +49,10 @@ class NewEvent:
         # self.date_start = llm_caller.response.get('date_start')
         # ...
         
-        # The in-memory event effects
-        self.db_event.date_start = llm_caller.response.get('date_start')
-        self.db_event.date_end = llm_caller.response.get('date_end')
+        self.db_event.start_dttm_aware = llm_caller.response.get('start_dttm_aware', None)
+        self.db_event.end_dttm_aware = llm_caller.response.get('end_dttm_aware', None)
+        self.db_event.start_dttm_naive = llm_caller.response.get('start_dttm_naive', None)
+        self.db_event.end_dttm_naive = llm_caller.response.get('end_dttm_naive', None)
         self.db_event.summary = llm_caller.response.get('summary')
         self.db_event.location = llm_caller.response.get('location')
         self.db_event.description = llm_caller.response.get('description')

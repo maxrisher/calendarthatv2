@@ -64,12 +64,11 @@ class LlmCaller:
         raw_start_date = extract_first_xml(self._raw_response, "dtstart")
         raw_end_date = extract_first_xml(self._raw_response, "dtend")
         
-        if len(timezone_name) == 0:
-            self.response["date_start"] = datetime.fromisoformat(raw_start_date)
-            self.response["date_end"] = datetime.fromisoformat(raw_end_date)
-        else:
-            self.response["date_start"] = datetime.fromisoformat(raw_start_date).replace(tzinfo=ZoneInfo(timezone_name))
-            self.response["date_end"] = datetime.fromisoformat(raw_end_date).replace(tzinfo=ZoneInfo(timezone_name))
+        self.response["start_dttm_naive"] = datetime.fromisoformat(raw_start_date).isoformat()
+        self.response["end_dttm_naive"] = datetime.fromisoformat(raw_end_date).isoformat()
+        
+        self.response["start_dttm_aware"] = datetime.fromisoformat(raw_start_date).replace(tzinfo=ZoneInfo(timezone_name))
+        self.response["end_dttm_aware"] = datetime.fromisoformat(raw_end_date).replace(tzinfo=ZoneInfo(timezone_name))
 
         summary = extract_first_xml(self._raw_response, "title")
         self.response["summary"] = summary

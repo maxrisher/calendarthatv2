@@ -48,6 +48,9 @@ job: performs the core logic for creating calendar events from text and optional
 
 # Future work / next steps
 ## Short term TODOs
+- Handle no time zone events gracefully
+- Handle full-day events gracefully
+- Add whitenoise for static files
 - Rate limit requests from anonymous users
 
 ## Modalities
