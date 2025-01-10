@@ -116,16 +116,41 @@ class Event(models.Model):
             url_dtstart = start_dttm.strftime("%Y%m%dT%H%M%S")
             url_dtend = end_dttm.strftime("%Y%m%dT%H%M%S")
 
-        link = f"https://calendar.google.com/calendar/render?action=TEMPLATE&text={url_summary}&dates={url_dtstart}/{url_dtend}&details={url_description}&location={url_location}&sf=true&output=xml"
-        return link
+        return f"https://calendar.google.com/calendar/render?action=TEMPLATE&text={url_summary}&dates={url_dtstart}/{url_dtend}&details={url_description}&location={url_location}&sf=true&output=xml"
 
     @property
     def outlook_link(self):
-        return "https://outlook.live.com/calendar/0/deeplink/compose?subject=Team+Meeting&body=Discuss+project+milestones+and+set+next+steps.&startdt=2025-01-05T15:00:00Z&enddt=2025-01-05T16:00:00Z&location=Office+Room+101"
+        url_summary = urllib.parse.quote(self.summary)
+        url_description = urllib.parse.quote(self.description)
+        url_location = urllib.parse.quote(self.location)
+
+        if self.is_aware:
+            url_dtstart = self.start_dttm_aware.strftime("%Y-%m-%dT%H:%M:%SZ")
+            url_dtend = self.end_dttm_aware.strftime("%Y-%m-%dT%H:%M:%SZ")
+        else:
+            start_dttm = datetime.fromisoformat(self.start_dttm_naive)
+            end_dttm = datetime.fromisoformat(self.end_dttm_naive)
+
+            url_dtstart = start_dttm.strftime("%Y-%m-%dT%H:%M:%S")
+            url_dtend = end_dttm.strftime("%Y-%m-%dT%H:%M:%S")
+
+        return f"https://outlook.live.com/calendar/0/deeplink/compose?subject={url_summary}&body={url_description}&startdt={url_dtstart}&enddt={url_dtend}&location={url_location}"
 
     @property
     def ics_data(self):
-        return "BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//Calendar Event Generator//example.com//\nBEGIN:VEVENT\nSUMMARY:Team Meeting\nDTSTART:20250105T150000Z\nDTEND:20250105T160000Z\nDTSTAMP:20250104T000000Z\nDESCRIPTION:Discuss project milestones and set next steps.\nLOCATION:Office Room 101\nEND:VEVENT\nEND:VCALENDAR"
+        ics_timestamp = self.build_start.strftime("%Y%m%dT%H%M%SZ")
+
+        if self.is_aware:
+            ics_dtstart = self.start_dttm_aware.strftime("%Y%m%dT%H%M%SZ")
+            ics_dtend = self.end_dttm_aware.strftime("%Y%m%dT%H%M%SZ")
+        else:
+            start_dttm = datetime.fromisoformat(self.start_dttm_naive)
+            end_dttm = datetime.fromisoformat(self.end_dttm_naive)
+
+            ics_dtstart = start_dttm.strftime("%Y%m%dT%H%M%S")
+            ics_dtend = end_dttm.strftime("%Y%m%dT%H%M%S")
+
+        return f"BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//CalendarThat//calendarthat.com//\nBEGIN:VEVENT\nSUMMARY:{self.summary}\nDTSTART:{ics_dtstart}\nDTEND:{ics_dtend}\nDTSTAMP:{ics_timestamp}\nDESCRIPTION:{self.description}\nLOCATION:{self.location}\nEND:VEVENT\nEND:VCALENDAR"
 
     def __str__(self):
         return f"{self.summary} ({self.uuid})"

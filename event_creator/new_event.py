@@ -44,10 +44,6 @@ class NewEvent:
         llm_caller = LlmCaller()
 
         await llm_caller.text_to_ics(self.user_input, use_timezone_name)
-        # Ask our LLMCaller to .text_to_ics(self.user_input)
-        # llm_caller.text_to_ics(self.user_input, self.timezone_name)
-        # self.date_start = llm_caller.response.get('date_start')
-        # ...
         
         self.db_event.start_dttm_aware = llm_caller.response.get('start_dttm_aware', None)
         self.db_event.end_dttm_aware = llm_caller.response.get('end_dttm_aware', None)
