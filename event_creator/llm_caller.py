@@ -67,8 +67,12 @@ class LlmCaller:
         self.response["start_dttm_naive"] = datetime.fromisoformat(raw_start_date).isoformat()
         self.response["end_dttm_naive"] = datetime.fromisoformat(raw_end_date).isoformat()
         
-        self.response["start_dttm_aware"] = datetime.fromisoformat(raw_start_date).replace(tzinfo=ZoneInfo(timezone_name))
-        self.response["end_dttm_aware"] = datetime.fromisoformat(raw_end_date).replace(tzinfo=ZoneInfo(timezone_name))
+        if len(timezone_name) > 0:
+            self.response["start_dttm_aware"] = datetime.fromisoformat(raw_start_date).replace(tzinfo=ZoneInfo(timezone_name))
+            self.response["end_dttm_aware"] = datetime.fromisoformat(raw_end_date).replace(tzinfo=ZoneInfo(timezone_name))
+        else:
+            self.response["start_dttm_aware"] = None
+            self.response["end_dttm_aware"] = None
 
         summary = extract_first_xml(self._raw_response, "title")
         self.response["summary"] = summary
