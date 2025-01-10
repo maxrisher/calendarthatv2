@@ -26,7 +26,11 @@ SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['calendarthatv2-production.up.railway.app', '127.0.0.1']
+ALLOWED_HOSTS = [
+    'calendarthatv2-production.up.railway.app',
+    'calendarthatv2-staging.up.railway.app',
+    '127.0.0.1',
+    os.getenv('RAILWAY_PUBLIC_DOMAIN')]
 
 
 # Application definition
@@ -159,4 +163,8 @@ ACCOUNT_UNIQUE_EMAIL = True
 LOGIN_REDIRECT_URL = "home"
 ACCOUNT_LOGOUT_REDIRECT_URL = "home"
 
-CSRF_TRUSTED_ORIGINS = ["https://calendarthatv2-production.up.railway.app"]
+CSRF_TRUSTED_ORIGINS = [
+    "https://calendarthatv2-production.up.railway.app", 
+    "https://calendarthatv2-staging.up.railway.app", 
+    f"https://{os.getenv('RAILWAY_PUBLIC_DOMAIN')}"
+    ]
