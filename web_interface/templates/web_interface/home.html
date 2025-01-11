@@ -1,36 +1,70 @@
 {% extends "web_interface/base.html" %} 
 
 {% block content %}
-{% if user.is_authenticated %}
-  Hi {{ user.email }}!
-{% else %}
-  <p>You are not logged in</p>
-{% endif %}
+    {% if user.is_authenticated %}
+        Hi {{ user.email }}!
+    {% else %}
+        <p>You are not logged in</p>
+    {% endif %}
 
-<h2>Paste your event text here</h2>
-<form method="POST" action="{% url 'create_event_web' %}">
-    {% csrf_token %}
-    <textarea name="event_text" rows="5" cols="60"></textarea>
-    <br>
-    <button type="submit">Create Event</button>
-</form>
-<br>
-<br>
-<h2>Paste the uuid of the event to check on here</h2>
-<form method="GET" action="{% url 'get_event_status' %}">
-  {% csrf_token %}
-  <textarea name="event_uuid" rows="5" cols="60"></textarea>
-  <br>
-  <button type="submit">Check status</button>
-</form>
-<br>
-<br>
-<h2>Paste the uuid of the event to download here</h2>
-<form method="GET" action="{% url 'download_calendar_event' %}">
-  {% csrf_token %}
-  <textarea name="event_uuid" rows="5" cols="60"></textarea>
-  <br>
-  <button type="submit">Download</button>
-</form>
+    <form id="event-form">
+        {% csrf_token %}
+        <input type="text" 
+               id="event-text" 
+               placeholder="Enter your event details (e.g., 'Lunch with Sarah next Tuesday at 1pm at Cafe Luna')">
+        <button type="submit">Create Event</button>
+    </form>
+    <div id="result-links"></div>
+
+
+    <script>
+        document.getElementById('event-form').onsubmit = async (e) => {
+            e.preventDefault();
+            
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            const resultLinks = document.getElementById('result-links'); 
+            
+            // Create FormData object to match regular form submission
+            const formData = new FormData();
+            formData.append('event_text', document.getElementById('event-text').value);
+            
+            const createResponse = await fetch("{% url 'create_event_web' %}", {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrfToken
+                },
+                body: formData  // Send as form data instead of JSON
+            });
+            const { event_uuid } = await createResponse.json();
+            console.log('event_uuid = ', event_uuid)
+
+            const pollStatus = async () => {
+                const statusResponse = await fetch(`{% url 'get_event_status' %}?event_uuid=${event_uuid}`);
+                const { build_status } = await statusResponse.json();
+                if (build_status === 'DONE') {
+                    console.log("build_status done");
+                     // Fetch calendar links
+                    const downloadResponse = await fetch(`{% url 'download_calendar_event' %}?event_uuid=${event_uuid}`);
+                    const links = await downloadResponse.json();
+                    
+                    // Display the links
+                    resultLinks.innerHTML = `
+                        <a href="${links.gcal_link}" target="_blank">Add to Google Calendar</a>
+                        <a href="${links.outlook_link}" target="_blank">Add to Outlook</a>
+                        <p> ICS download coming soon! </p>
+                    `;
+                } else if (build_status === 'FAILED') {
+                    resultLinks.innerHTML = '<p>Something went wrong. Please try again.</p>';
+                } else {
+                    console.log("build_status started")
+                    // Continue polling if status is still "STARTED"
+                    setTimeout(pollStatus, 2000); // Poll every 2 seconds
+                }
+            };
+            
+            pollStatus(); // Start polling
+ 
+        };
+    </script>
 
 {% endblock %}
