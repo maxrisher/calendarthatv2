@@ -1,9 +1,12 @@
-from django.db import models
-from django.conf import settings
-
 import uuid
 import urllib.parse
 from datetime import datetime
+
+from django.db import models
+from django.conf import settings
+from django.core.exceptions import ValidationError
+
+from .utils import raise_if_invalid_ics
 
 # Event model
 # Represents an event with details like:
@@ -152,6 +155,25 @@ class Event(models.Model):
 
         return f"BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//CalendarThat//calendarthat.com//\nBEGIN:VEVENT\nSUMMARY:{self.summary}\nDTSTART:{ics_dtstart}\nDTEND:{ics_dtend}\nDTSTAMP:{ics_timestamp}\nDESCRIPTION:{self.description}\nLOCATION:{self.location}\nEND:VEVENT\nEND:VCALENDAR"
 
+    def clean(self):
+        super().clean()
+        
+        print('cleaning')
+        
+        if self.build_status == "DONE":
+            try:
+                raise_if_invalid_ics(
+                    name=self.summary,
+                    begin=self.start_dttm_aware or self.start_dttm_naive,
+                    end=self.end_dttm_aware or self.end_dttm_naive,
+                    description=self.description,
+                    location=self.location
+                    )
+                print('testing if ics')
+                
+            except Exception as e:
+                raise ValidationError(f"Invalid format: {str(e)}")
+    
     def __str__(self):
         return f"{self.summary} ({self.uuid})"
     

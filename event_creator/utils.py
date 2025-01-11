@@ -1,4 +1,5 @@
 import re
+from ics import Calendar, Event as ICSEvent
 
 def extract_first_xml(body_of_text, xml_tag):
     xml_tag_pattern = fr'<{xml_tag}>(.*?)</{xml_tag}>'
@@ -18,3 +19,29 @@ def extract_first_xml(body_of_text, xml_tag):
 
     #Get only the first match
     return matches[0].strip() if matches else None
+
+def raise_if_invalid_ics(name, begin, end, description, location):
+    if not name:
+        raise ValueError("Event must have a summary/title")
+    if not begin:
+        raise ValueError("Event must have a start time")
+    if not end:
+        raise ValueError("Event must have an end time")
+    
+    cal = Calendar()
+    event = ICSEvent(
+        name=name,
+        begin=begin,
+        end=end,
+        description=description,
+        location=location
+    )
+    if event.end <= event.begin:
+        raise ValueError("End time must be after start time")
+    
+    cal.events.add(event)
+    
+    # Try to serialize - this will raise if invalid
+    str(cal)
+    print(cal)
+    
