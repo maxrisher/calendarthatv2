@@ -1,5 +1,6 @@
 import re
 from ics import Calendar, Event as ICSEvent
+from datetime import datetime
 
 def extract_first_xml(body_of_text, xml_tag):
     xml_tag_pattern = fr'<{xml_tag}>(.*?)</{xml_tag}>'
@@ -44,4 +45,13 @@ def raise_if_invalid_ics(name, begin, end, description, location):
     # Try to serialize - this will raise if invalid
     str(cal)
     print(cal)
-    
+
+def iso_8601_str_rewrite(iso_8601_str, format):
+    naive_dttm = datetime.fromisoformat(iso_8601_str)
+
+    if format == "outlook":
+        return naive_dttm.strftime("%Y-%m-%dT%H:%M:%S")
+    if format == "gcal" or format == "ics":
+        return naive_dttm.strftime("%Y%m%dT%H%M%S")
+    else:
+        return naive_dttm.strftime("%Y%m%dT%H%M%S")

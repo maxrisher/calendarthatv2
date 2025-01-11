@@ -6,7 +6,7 @@ from django.db import models
 from django.conf import settings
 from django.core.exceptions import ValidationError
 
-from .utils import raise_if_invalid_ics
+from .utils import raise_if_invalid_ics, iso_8601_str_rewrite
 
 # Event model
 # Represents an event with details like:
@@ -60,7 +60,7 @@ class Event(models.Model):
         blank=True,
     )    
 
-    # in this format YYYY-MM-DDThh:mm:ss
+    # in this ISO 8601 format YYYY-MM-DDThh:mm:ss
     start_dttm_naive = models.CharField(
         max_length=25,
         null=True,
@@ -72,7 +72,7 @@ class Event(models.Model):
         blank=True,
     )
 
-    # in this format YYYY-MM-DDThh:mm:ss
+    # in this ISO 8601 format YYYY-MM-DDThh:mm:ss
     end_dttm_naive = models.CharField(
         max_length=25,
         null=True,
@@ -113,11 +113,8 @@ class Event(models.Model):
             url_dtstart = self.start_dttm_aware.strftime("%Y%m%dT%H%M%SZ")
             url_dtend = self.end_dttm_aware.strftime("%Y%m%dT%H%M%SZ")
         else:
-            start_dttm = datetime.fromisoformat(self.start_dttm_naive)
-            end_dttm = datetime.fromisoformat(self.end_dttm_naive)
-
-            url_dtstart = start_dttm.strftime("%Y%m%dT%H%M%S")
-            url_dtend = end_dttm.strftime("%Y%m%dT%H%M%S")
+            url_dtstart = iso_8601_str_rewrite(self.start_dttm_naive, "gcal")
+            url_dtend = iso_8601_str_rewrite(self.end_dttm_naive, "gcal")
 
         return f"https://calendar.google.com/calendar/render?action=TEMPLATE&text={url_summary}&dates={url_dtstart}/{url_dtend}&details={url_description}&location={url_location}&sf=true&output=xml"
 
@@ -131,11 +128,8 @@ class Event(models.Model):
             url_dtstart = self.start_dttm_aware.strftime("%Y-%m-%dT%H:%M:%SZ")
             url_dtend = self.end_dttm_aware.strftime("%Y-%m-%dT%H:%M:%SZ")
         else:
-            start_dttm = datetime.fromisoformat(self.start_dttm_naive)
-            end_dttm = datetime.fromisoformat(self.end_dttm_naive)
-
-            url_dtstart = start_dttm.strftime("%Y-%m-%dT%H:%M:%S")
-            url_dtend = end_dttm.strftime("%Y-%m-%dT%H:%M:%S")
+            url_dtstart = iso_8601_str_rewrite(self.start_dttm_naive, "outlook")
+            url_dtend = iso_8601_str_rewrite(self.end_dttm_naive, "outlook")
 
         return f"https://outlook.live.com/calendar/0/deeplink/compose?subject={url_summary}&body={url_description}&startdt={url_dtstart}&enddt={url_dtend}&location={url_location}"
 
@@ -147,11 +141,8 @@ class Event(models.Model):
             ics_dtstart = self.start_dttm_aware.strftime("%Y%m%dT%H%M%SZ")
             ics_dtend = self.end_dttm_aware.strftime("%Y%m%dT%H%M%SZ")
         else:
-            start_dttm = datetime.fromisoformat(self.start_dttm_naive)
-            end_dttm = datetime.fromisoformat(self.end_dttm_naive)
-
-            ics_dtstart = start_dttm.strftime("%Y%m%dT%H%M%S")
-            ics_dtend = end_dttm.strftime("%Y%m%dT%H%M%S")
+            ics_dtstart = iso_8601_str_rewrite(self.start_dttm_naive, "ics")
+            ics_dtend = iso_8601_str_rewrite(self.end_dttm_naive, "ics")
 
         return f"BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//CalendarThat//calendarthat.com//\nBEGIN:VEVENT\nSUMMARY:{self.summary}\nDTSTART:{ics_dtstart}\nDTEND:{ics_dtend}\nDTSTAMP:{ics_timestamp}\nDESCRIPTION:{self.description}\nLOCATION:{self.location}\nEND:VEVENT\nEND:VCALENDAR"
 
