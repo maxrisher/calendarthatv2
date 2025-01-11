@@ -17,12 +17,19 @@ from .utils import raise_if_invalid_ics, iso_8601_str_rewrite
 # Uses UUID as the primary key and orders by creation datetime (descending).
 
 class Event(models.Model):
+    """
+    [INTERFACE] Event model represents a calendar event and its processing state
+    [IN] User inputs (text description, optional user), Event details (start/end times, location, etc)
+    [OUT] Calendar event data, processing status, and calendar-specific formatted links
+    """
+    # [DATA] Unique identifier for the event
     uuid = models.UUIDField(
         primary_key=True,
         default=uuid.uuid4,
         editable=False,
     )
     
+    # [DATA] Associated user who created the event, optional
     custom_user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -30,7 +37,8 @@ class Event(models.Model):
         blank=True,
         related_name="events",
     )    
-
+    
+    # [DATA] Processing status constants
     STARTED = "STARTED"
     DONE = "DONE"
     FAILED = "FAILED"
@@ -40,19 +48,23 @@ class Event(models.Model):
         FAILED: "FAILED",
     }
 
+    # [DATA] Current processing status of the event
     build_status = models.CharField(
         max_length=7,
         choices=BUILD_STATUS_CHOICES,
         default=STARTED,
     )
 
+    # [DATA] When event processing started
     build_start = models.DateTimeField(auto_now_add=True)
     
+    # [DATA] How long event processing took
     build_time = models.DurationField(
         null=True,
         blank=True,
     )    
 
+    # [DATA] Original text input from user
     user_input = models.TextField()
 
     start_dttm_aware = models.DateTimeField(
@@ -67,6 +79,7 @@ class Event(models.Model):
         blank=True,
         )
 
+    # [DATA] Start datetime with timezone information
     end_dttm_aware = models.DateTimeField(
         null=True,
         blank=True,
@@ -79,6 +92,7 @@ class Event(models.Model):
         blank=True,
         )
 
+    # [DATA] Start text datetime in ISO 8601 format without timezone
     summary = models.CharField(
         null=True,
         blank=True,
