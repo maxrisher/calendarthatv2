@@ -8,19 +8,17 @@ from django.core.exceptions import ValidationError
 
 from .utils import raise_if_invalid_ics, iso_8601_str_rewrite
 
-# Event model
-# Represents an event with details like:
-# - Associated user (custom user model)
-# - Processing status (STARTED, DONE, FAILED)
-# - Creation start datetime (build_start) and duration (build_time)
-# - Event details: start/end datetime, location, summary, and description
-# Uses UUID as the primary key and orders by creation datetime (descending).
-
 class Event(models.Model):
     """
     [INTERFACE] Event model represents a calendar event and its processing state
-    [IN] User inputs (text description, optional user), Event details (start/end times, location, etc)
-    [OUT] Calendar event data, processing status, and calendar-specific formatted links
+    
+    Represents an event with details like:
+    - Associated user (custom user model)
+    - Processing status (STARTED, DONE, FAILED)
+    - Creation start datetime (build_start) and duration (build_time)
+    - Event details: start/end datetime, location, summary, and description
+    
+    Uses UUID as the primary key and orders by creation datetime (descending).
     """
     # [DATA] Unique identifier for the event
     uuid = models.UUIDField(
@@ -67,44 +65,47 @@ class Event(models.Model):
     # [DATA] Original text input from user
     user_input = models.TextField()
 
+    # [DATA] Start datetime with timezone information
     start_dttm_aware = models.DateTimeField(
         null=True,
         blank=True,
     )    
 
-    # in this ISO 8601 format YYYY-MM-DDThh:mm:ss
+    # [DATA] Start text datetime in ISO 8601 format without timezone
     start_dttm_naive = models.CharField(
         max_length=25,
         null=True,
         blank=True,
         )
-
-    # [DATA] Start datetime with timezone information
+    
+    # [DATA] End datetime with timezone information
     end_dttm_aware = models.DateTimeField(
         null=True,
         blank=True,
     )
 
-    # in this ISO 8601 format YYYY-MM-DDThh:mm:ss
+    # [DATA] End text datetime in ISO 8601 format without timezone
     end_dttm_naive = models.CharField(
         max_length=25,
         null=True,
         blank=True,
         )
 
-    # [DATA] Start text datetime in ISO 8601 format without timezone
+    # [DATA] Event title/name
     summary = models.CharField(
         null=True,
         blank=True,
         max_length=255,
     )
     
+    # [DATA] Physical or virtual location of event
     location = models.CharField(
         null=True,
         blank=True,
         max_length=255,
     )
     
+    # [DATA] Detailed description of the event
     description = models.TextField(
         null=True,
         blank=True,
