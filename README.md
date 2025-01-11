@@ -3,10 +3,10 @@ CalendarThat is a web service which aims to convert any text into a calendar eve
 
 # Deployment
 ## Local
-Use the command `python -m uvicorn calendarthat_site.asgi:application` from the calendarthatv2 directory. When you are in the calendarthat_site directory to start the asgi server locally
 
 # `.env` file
-copy the environment variables from Railway and then it should work
+- Copy the environment variables from Railway and then it should work
+- Use the command `python -m uvicorn calendarthat_site.asgi:application` from the calendarthatv2 directory. When you are in the calendarthat_site directory to start the asgi server locally
 
 ## Railway
 
