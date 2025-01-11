@@ -21,6 +21,7 @@
 # to_gcal_link creates a gcal link
 
 # to_outlook_link creates an outlook link
+
 from datetime import datetime, timezone
 import logging
 
@@ -31,11 +32,18 @@ from event_creator.llm_caller import LlmCaller
 
 logger = logging.getLogger(__name__)
 
-class NewEvent:
-    #get the event from our database
+class EventBuilder:
+    """
+    [INTERFACE] EventBuilder manages the transition from user input to formal calendar event creation in the database
+    [IN] event_id and user_input (calendar creation text)
+    [OUT] Completes the database version of the user generated calendar event
+    """    
     def __init__(self, event_id, user_input):
+        # [DATA] the unique event identifier in the database
         self.event_id = event_id
+        # [DATA] the user text to create the event
         self.user_input = user_input
+        # [DATA] the actual event object in the database which we are building
         self.db_event = None      
 
     async def formalize(self):

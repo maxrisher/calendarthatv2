@@ -5,7 +5,7 @@ from django.shortcuts import render
 from django.http import JsonResponse
 
 from event_creator.models import Event
-from event_creator.new_event import NewEvent
+from event_creator.new_event import EventBuilder
 
 def home(request):
     return render(request, 'web_interface/home.html')
@@ -24,7 +24,7 @@ async def create_event_web(request):
         )
 
     # create and start running an async task to process the request, passing our request id
-    new_event = NewEvent(event_uuid, event_text)
+    new_event = EventBuilder(event_uuid, event_text)
     asyncio.create_task(new_event.formalize())
 
     # return the task ID to the user
