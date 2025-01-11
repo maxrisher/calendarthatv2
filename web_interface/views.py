@@ -1,57 +1,104 @@
 import uuid
 import asyncio
+import logging
 
 from django.shortcuts import render
 from django.http import JsonResponse
 
 from event_creator.models import Event
-from event_creator.new_event import NewEvent
+from event_creator.new_event import EventBuilder
+
+logger = logging.getLogger(__name__)
 
 def home(request):
+    """
+    [INTERFACE] Renders the web application's home page
+    [IN] HTTP request
+    [OUT] Rendered home page template
+    """
     return render(request, 'web_interface/home.html')
 
 async def create_event_web(request):
+    """
+    [INTERFACE] Initiates asynchronous calendar event creation process
+    [IN] HTTP POST request with event_text and optional authenticated user
+    [OUT] JSON response with event UUID for tracking
+    """
     user = await request.auser()
     event_text = request.POST.get('event_text', '')
+
+    logger.info(f"New event creation requested by user {request.user.id if request.user.is_authenticated else 'anonymous'}")
     
     event_uuid = uuid.uuid4()
 
-    # create a new event request in the database
     await Event.objects.acreate(
         uuid=event_uuid, 
         custom_user=user if user.is_authenticated else None, 
         user_input=event_text
         )
 
-    # create and start running an async task to process the request, passing our request id
-    new_event = NewEvent(event_uuid, event_text)
+    new_event = EventBuilder(event_uuid, event_text)
     asyncio.create_task(new_event.formalize())
-
-    # return the task ID to the user
+    
+    logger.info(f"Event creation initiated with UUID: {event_uuid}")
+    
     return JsonResponse({
         "event_uuid": str(event_uuid)
     })
 
 async def get_event_status(request):
-    # Check on the status of the event
-    event_uuid = uuid.UUID(request.GET.get('event_uuid'))
-    event = await Event.objects.aget(uuid=event_uuid)
+    """
+    [INTERFACE] Retrieves current status of event processing
+    [IN] HTTP GET request with event_uuid
+    [OUT] JSON response with build_status (STARTED/DONE/FAILED) or error
+    """
+    try:
+        event_uuid = uuid.UUID(request.GET.get('event_uuid'))
+        event = await Event.objects.aget(uuid=event_uuid)
 
-    return JsonResponse({
-        "build_status": event.build_status
-    })
+        return JsonResponse({
+            "build_status": event.build_status
+        })
+        
+    except Event.DoesNotExist:
+        return JsonResponse({
+            "error": "Event not found"
+        }, status=404)
 
 async def download_calendar_event(request):
-    # Download the calendar event
-    event_uuid = uuid.UUID(request.GET.get('event_uuid'))
-    event = await Event.objects.aget(uuid=event_uuid)
-    
-    gcal_link = event.gcal_link
-    outlook_link = event.outlook_link
-    ics_data = event.ics_data
+    """
+    [INTERFACE] Provides calendar event download data if processing complete
+    [IN] HTTP GET request with event_uuid
+    [OUT] JSON response with calendar links (Google Calendar, Outlook) and ICS data, or error if not ready
+    """
+    try:
+        event_uuid = uuid.UUID(request.GET.get('event_uuid'))
+        event = await Event.objects.aget(uuid=event_uuid)
+        
+        if event.build_status == Event.STARTED:
+            return JsonResponse({
+                "error": "Event still processing"
+            }, status=409)
+            
+        if event.build_status == Event.FAILED:
+            return JsonResponse({
+                "error": "Event processing failed"
+            }, status=422)
 
-    return JsonResponse({
-        "gcal_link": gcal_link,
-        "outlook_link": outlook_link,
-        "ics_data": ics_data
-    })
+        return JsonResponse({
+            "gcal_link": event.gcal_link,
+            "outlook_link": event.outlook_link,
+            "ics_data": event.ics_data
+        })
+    
+    except Event.DoesNotExist:
+        return JsonResponse({
+            "error": "Event not found"
+        }, status=404)
+    
+    except Exception as e:
+        logger.error(f"Unexpected error in download_calendar_event: {str(e)}")
+        return JsonResponse({
+            "error": "Unexpected error occured"
+        }, status=500)
+    
