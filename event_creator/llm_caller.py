@@ -2,10 +2,13 @@ from anthropic import AsyncAnthropic
 import os
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 from datetime import datetime
+import logging
 
 from django.utils import timezone
 
 from .utils import extract_first_xml
+
+logger = logging.getLogger(__name__)
 
 class LlmCaller:
     """
@@ -48,11 +51,13 @@ class LlmCaller:
 
         self._raw_response = anthropic_response.content[0].text
 
+        logger.debug("Claude API call successful")
+
         self._clean_response()
 
-        print(system_prompt)
-        print(user_prompt)
-        print(self._raw_response)
+        logger.debug(f"System prompt: \n{system_prompt}")
+        logger.debug(f"User prompt: \n{user_prompt}")
+        logger.debug(f"LLM response: \n{self._raw_response}")
 
     def _create_ics_user_prompt(self, user_text, user_timezone_name):
         """

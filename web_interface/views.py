@@ -26,6 +26,8 @@ async def create_event_web(request):
     """
     user = await request.auser()
     event_text = request.POST.get('event_text', '')
+
+    logger.info(f"New event creation requested by user {request.user.id if request.user.is_authenticated else 'anonymous'}")
     
     event_uuid = uuid.uuid4()
 
@@ -37,7 +39,9 @@ async def create_event_web(request):
 
     new_event = EventBuilder(event_uuid, event_text)
     asyncio.create_task(new_event.formalize())
-
+    
+    logger.info(f"Event creation initiated with UUID: {event_uuid}")
+    
     return JsonResponse({
         "event_uuid": str(event_uuid)
     })

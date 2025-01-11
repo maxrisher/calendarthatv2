@@ -1,12 +1,14 @@
 import uuid
 import urllib.parse
-from datetime import datetime
+import logging
 
 from django.db import models
 from django.conf import settings
 from django.core.exceptions import ValidationError
 
 from .utils import raise_if_invalid_ics, iso_8601_str_rewrite
+
+logger = logging.getLogger(__name__)
 
 class Event(models.Model):
     """
@@ -162,9 +164,9 @@ class Event(models.Model):
         return f"BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//CalendarThat//calendarthat.com//\nBEGIN:VEVENT\nSUMMARY:{self.summary}\nDTSTART:{ics_dtstart}\nDTEND:{ics_dtend}\nDTSTAMP:{ics_timestamp}\nDESCRIPTION:{self.description}\nLOCATION:{self.location}\nEND:VEVENT\nEND:VCALENDAR"
 
     def clean(self):
-        super().clean()
+        logger.debug(f"Validating event {self.uuid}")
         
-        print('cleaning')
+        super().clean()
         
         if self.build_status == "DONE":
             try:
@@ -175,7 +177,7 @@ class Event(models.Model):
                     description=self.description,
                     location=self.location
                     )
-                print('testing if ics')
+                logger.debug(f"Event {self.uuid} validation successful")
                 
             except Exception as e:
                 raise ValidationError(f"Invalid format: {str(e)}")

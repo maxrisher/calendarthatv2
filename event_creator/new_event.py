@@ -47,13 +47,17 @@ class EventBuilder:
         self.db_event = None      
 
     async def formalize(self):
-        print("Started task: ", str(self.event_id)[:5])
+        logger.info(f"Starting event formalization for {self.event_id}")
+        
         self.db_event = await Event.objects.aget(uuid=self.event_id)       
         use_timezone_name = self.db_event.custom_user.email if self.db_event.custom_user is not None else None
         
         try:
+            logger.debug(f"Calling LLM for event {self.event_id} with input: {self.user_input[:100]}...")
             llm_caller = LlmCaller()
             await llm_caller.text_to_ics(self.user_input, use_timezone_name)
+            
+            logger.debug(f"LLM call successful for event {self.event_id}")
             
             self.db_event.start_dttm_aware = llm_caller.response.get('start_dttm_aware', None)
             self.db_event.end_dttm_aware = llm_caller.response.get('end_dttm_aware', None)
@@ -77,4 +81,4 @@ class EventBuilder:
             logger.error(f"Unexpected error creating event {self.event_id}: {str(e)}")
             await self.db_event.asave()
 
-        print("Done with task: ", str(self.event_id)[:5])
+        logger.info(f"Event {self.event_id} successfully formalized in {self.db_event.build_time}")
