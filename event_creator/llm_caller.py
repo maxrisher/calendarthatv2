@@ -1,22 +1,32 @@
 from anthropic import AsyncAnthropic
 import os
-import re
-from zoneinfo import ZoneInfo
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 from datetime import datetime
 
 from django.utils import timezone
 
+from .utils import extract_first_xml
+
 class LlmCaller:
+    """
+    [INTERFACE] LlmCaller asks an LLM a variety of prompts, which are its methods. Namely, text_to_ics() converts user text into ICS event data.
+    [IN] user_text (str), user_timezone_name (str, optional).
+    [OUT] self.response (dict) with ICS fields.
+    """
     def __init__(self):
+        # [DATA] Client for Claude API calls
         self.client = AsyncAnthropic(api_key=os.environ.get("PRODUCTION_ANTHROPIC_API_KEY"))
+        # [DATA] Raw XML response from Claude
         self._raw_response = None
+        # [DATA] Parsed event data dictionary
         self.response = {}
 
     async def text_to_ics(self, user_text, user_timezone_name=None):
-        # call the llm
-        # clean the response
-        # validate the response
-
+        """
+        [INTERFACE] Convert text to calendar event data
+        [INPUTS] Event description text, optional timezone
+        [OUTPUTS] Populated self.response dict
+        """
         with open('event_creator/00_system_text_to_ics_v1.txt', 'r') as file:
             system_prompt = file.read()
 
@@ -45,7 +55,11 @@ class LlmCaller:
         print(self._raw_response)
 
     def _create_ics_user_prompt(self, user_text, user_timezone_name):
-        # read the user prompt
+        """
+        [INTERFACE] Formats prompt template with user inputs
+        [INPUTS] Event text, timezone
+        [OUTPUTS] Formatted prompt string
+        """  
         with open('event_creator/00_user_text_to_ics_v1.txt', 'r') as file:
             blank_user_prompt = file.read()
 
@@ -60,36 +74,56 @@ class LlmCaller:
         return user_prompt
 
     def _clean_response(self):
+        """
+        [INTERFACE] Parses XML response into structured event data
+        [INPUTS] Raw XML in self._raw_response
+        [OUTPUTS] Populated self.response dict with parsed fields (all strings)
+        """
+        
+        def str_to_iso_dttm_str(date_str):
+            """
+            [INTERFACE] Safely parses datetime strings
+            [OUTPUTS] ISO formatted string or None
+            """            
+            try:
+                return datetime.fromisoformat(date_str).isoformat()
+            except (ValueError, TypeError):
+                return None
+
+        def str_and_tz_to_dttm(date_str, timezone_name):
+            """
+            [INTERFACE] Safely parses datetime strings with timezone
+            [OUTPUTS] datetime object or None
+            """            
+            try:
+                return datetime.fromisoformat(date_str).replace(tzinfo=ZoneInfo(timezone_name))
+            except (ValueError, TypeError, ZoneInfoNotFoundError):
+                return None
+            
+        self.response = {
+            "start_dttm_naive": None, # [DATA] ISO formatted string or None
+            "end_dttm_naive": None, # [DATA] ISO formatted string or None
+            "start_dttm_aware": None, # [DATA] datetime or None
+            "end_dttm_aware": None, # [DATA] datetime or None
+            "summary": None, # [DATA] string or None
+            "description": None, # [DATA] string or None
+            "location": None # [DATA] string or None
+            }
+
         timezone_name = extract_first_xml(self._raw_response, "timezone_name")
         raw_start_date = extract_first_xml(self._raw_response, "dtstart")
         raw_end_date = extract_first_xml(self._raw_response, "dtend")
         
-        self.response["start_dttm_naive"] = datetime.fromisoformat(raw_start_date).isoformat()
-        self.response["end_dttm_naive"] = datetime.fromisoformat(raw_end_date).isoformat()
+        self.response["start_dttm_naive"] = str_to_iso_dttm_str(raw_start_date)
+        self.response["end_dttm_naive"] = str_to_iso_dttm_str(raw_end_date)
         
-        if len(timezone_name) > 0:
-            self.response["start_dttm_aware"] = datetime.fromisoformat(raw_start_date).replace(tzinfo=ZoneInfo(timezone_name))
-            self.response["end_dttm_aware"] = datetime.fromisoformat(raw_end_date).replace(tzinfo=ZoneInfo(timezone_name))
-        else:
-            self.response["start_dttm_aware"] = None
-            self.response["end_dttm_aware"] = None
+        self.response["start_dttm_aware"] = str_and_tz_to_dttm(raw_start_date, timezone_name)
+        self.response["end_dttm_aware"] = str_and_tz_to_dttm(raw_end_date, timezone_name)
 
-        summary = extract_first_xml(self._raw_response, "title")
-        self.response["summary"] = summary
-        
-        description = extract_first_xml(self._raw_response, "description")
-        self.response["description"] = description
-
-        location = extract_first_xml(self._raw_response, "location")
-        self.response["location"] = location
-
-def extract_first_xml(body_of_text, xml_tag):
-    xml_tag_pattern = fr'<{xml_tag}>(.*?)</{xml_tag}>'
-    matches = re.findall(xml_tag_pattern, body_of_text, re.DOTALL)
-
-    #Get only the first match
-    clean_xml_content = matches[0].strip()
-    return clean_xml_content
+        self.response["summary"] = extract_first_xml(self._raw_response, "title")
+        self.response["description"] = extract_first_xml(self._raw_response, "description")
+        self.response["location"] = extract_first_xml(self._raw_response, "location")
+    
 
 # llm_caller = LlmCaller()
 # import asyncio
