@@ -14,7 +14,7 @@
         </button>
     </form>
 
-    <div id="result-links" class="mt-6 space-y-3"></div>
+    <div id="result-links" class="mt-6 space-y-3 max-w-lg mx-auto"></div>
 </div>
 
 
@@ -51,9 +51,9 @@
                     
                     // Display the links
                     resultLinks.innerHTML = `
-                        <a href="${links.gcal_link}" target="_blank">Add to Google Calendar</a>
-                        <a href="${links.outlook_link}" target="_blank">Add to Outlook</a>
-                        <p> ICS download coming soon! </p>
+                        <a href="${links.gcal_link}" class="block w-full text-center bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors mb-3">Add to Google Calendar</a>
+                        <a href="${links.outlook_link}" class="block w-full text-center bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors mb-3">Add to Outlook</a>
+                        <p class="text-gray-600 text-center">ICS download coming soon!</p>
                     `;
                 } else if (build_status === 'FAILED') {
                     resultLinks.innerHTML = '<p>Something went wrong. Please try again.</p>';
