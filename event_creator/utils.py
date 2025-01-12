@@ -43,8 +43,7 @@ def raise_if_invalid_ics(name, begin, end, description, location):
     cal.events.add(event)
     
     # Try to serialize - this will raise if invalid
-    str(cal)
-    print(cal)
+    cal.serialize()
 
 def iso_8601_str_rewrite(iso_8601_str, format):
     naive_dttm = datetime.fromisoformat(iso_8601_str)
