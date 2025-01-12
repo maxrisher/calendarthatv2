@@ -9,3 +9,4 @@ We have a very very minimalist comment style. Please only add comments of the fo
     - Describe the meaning of the variables in the module
 
 ## Project context
+Calendarthat is a django site hosted on railway.
