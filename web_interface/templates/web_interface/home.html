@@ -2,12 +2,6 @@
 
 {% block content %}
 <div class="max-w-2xl mx-auto p-6">
-    {% if user.is_authenticated %}
-        <p class="text-lg font-medium mb-6">Hi {{ user.email }}!</p>
-    {% else %}
-        <p class="text-lg text-gray-600 mb-6">You are not logged in</p>
-    {% endif %}
-
     <form id="event-form" class="space-y-4">
         {% csrf_token %}
         <input type="text" 
