@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 import os
 import dj_database_url
 from pathlib import Path
+import json
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -168,3 +169,38 @@ CSRF_TRUSTED_ORIGINS = [
     "https://calendarthatv2-staging.up.railway.app", 
     f"https://{os.getenv('RAILWAY_PUBLIC_DOMAIN')}"
     ]
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'json': {
+            'format': json.dumps({
+                'timestamp': '%(asctime)s',
+                'level': '%(levelname)s',
+                'logger_name': '%(name)s',
+                'process': '%(process)d',
+                'message': '%(message)s'
+            }),
+        }
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'json',
+            'level': os.getenv('DJANGO_CONSOLE_LOGGING_LEVEL')
+        }
+    },
+    'loggers': {
+        'event_creator': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+        'web_interface': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': False
+        }
+    }
+}
