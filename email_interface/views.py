@@ -26,11 +26,12 @@ async def receive_email(request):
     """
     try:
         email_data = json.loads(request.body)
+        logger.debug(email_data)
         email = await Email.objects.acreate(
-            sender=email_data.get('sender'),
+            sender=email_data.get('from'),
             receiver=settings.CALENDARTHAT_EVENT_EMAIL_SENDER_ADDRESS,
             subject=email_data.get('subject', ''),
-            body=email_data.get('body', ''),
+            body=email_data.get('text', ''),
         )
         
         asyncio.create_task(create_and_send_event(email))
