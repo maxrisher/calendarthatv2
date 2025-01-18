@@ -43,6 +43,7 @@ async def send_and_save_event_reply(uuid, destination_email):
         await asyncio.to_thread(sg.send, sendgun_msg)
                 
         logger.info(f"email sent! to {destination_email}")
+        
     except Exception as e:
         msg_to_send.failed = True
         await msg_to_send.asave()

@@ -9,10 +9,7 @@ class Email(models.Model):
     failed = models.BooleanField(blank=True, null=True)
     
     def to_string(self):
-        as_string = f"""SUBJECT: 
-{self.subject}
-BODY:
-{self.body}"""
+        as_string = f"""SUBJECT:\n{self.subject}\n\nBODY:\n{self.body}"""
         return as_string
     
     def __str__(self):
