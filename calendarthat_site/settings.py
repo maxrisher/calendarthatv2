@@ -208,3 +208,5 @@ LOGGING = {
         }
     }
 }
+
+CALENDARTHAT_EVENT_EMAIL_SENDER_ADDRESS = "new@calendarthat.com"
