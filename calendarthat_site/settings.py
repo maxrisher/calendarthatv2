@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     "accounts",
     "event_creator",
     "web_interface",
+    "email_interface",
 ]
 
 MIDDLEWARE = [
