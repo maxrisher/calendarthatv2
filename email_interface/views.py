@@ -36,8 +36,10 @@ async def receive_email(request):
         asyncio.create_task(create_and_send_event(email))
         
         return JsonResponse({"status": "accepted"}, status=202)
+    
     except Exception as e:
         logger.error(f"Unexpected error in event_from_email: {str(e)}")
+        
         return JsonResponse({
             "error": "Unexpected error occured"
         }, status=500)

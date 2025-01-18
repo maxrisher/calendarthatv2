@@ -6,6 +6,7 @@ class Email(models.Model):
     receiver = models.EmailField()
     subject = models.TextField(max_length=998)
     body = models.TextField()
+    failed = models.BooleanField(blank=True, null=True)
     
     def to_string(self):
         as_string = f"""SUBJECT: 
