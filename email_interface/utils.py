@@ -7,7 +7,8 @@ import logging
 from django.db import transaction
 from django.conf import settings
 
-from event_creator.models import Event, Email
+from event_creator.models import Event
+from .models import Email
 
 logger = logging.getLogger(__name__)
 
