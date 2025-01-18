@@ -26,7 +26,7 @@ async def receive_email(request):
     """
     try:
         email_data = json.loads(request.body)
-        email = Email.objects.create(
+        email = await Email.objects.acreate(
             sender=email_data.get('sender'),
             receiver=settings.CALENDARTHAT_EVENT_EMAIL_SENDER_ADDRESS,
             subject=email_data.get('subject', ''),
