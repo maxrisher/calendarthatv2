@@ -49,7 +49,7 @@ async def receive_email(request):
         }, status=500)
 
 async def create_and_send_event(email: Email):
-    user = await CustomUser.objects.aget(email=email.sender)
+    user = await CustomUser.objects.filter(email=email.sender).afirst()
     event_uuid = uuid.uuid4()
     
     logger.info(f"New event creation requested by user {user.id if user else 'anonymous'}")
