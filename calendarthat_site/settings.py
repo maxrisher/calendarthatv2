@@ -206,6 +206,11 @@ LOGGING = {
             'handlers': ['console'],
             'level': 'DEBUG',
             'propagate': False
+        },
+        'email_interface': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': False
         }
     }
 }
