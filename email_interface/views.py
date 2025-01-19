@@ -32,7 +32,7 @@ async def receive_email(request):
         logger.debug(email_data)
         email = await Email.objects.acreate(
             sender=envelope.get('from'),
-            receiver=envelope.get('to'),
+            receiver=settings.CALENDARTHAT_EVENT_EMAIL_SENDER_ADDRESS,
             subject=email_data.get('subject', ''),
             body=email_data.get('text', ''),
         )
