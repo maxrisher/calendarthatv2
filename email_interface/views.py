@@ -5,6 +5,7 @@ import asyncio
 
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
 from django.http import JsonResponse
 from django.conf import settings
 
@@ -18,6 +19,7 @@ from .utils import send_and_save_event_reply
 logger = logging.getLogger(__name__)
 
 @csrf_exempt
+@require_POST
 async def receive_email(request):
     """
     [INTERFACE] Webhook endpoint for sendgrid that processes incoming emails to create calendar events
@@ -25,11 +27,12 @@ async def receive_email(request):
     [OUT] HTTP response indicating success/failure in reading the email
     """
     try:
-        email_data = json.loads(request.body)
+        email_data = request.POST
+        envelope = json.loads(email_data.get('envelope'))
         logger.debug(email_data)
         email = await Email.objects.acreate(
-            sender=email_data.get('from'),
-            receiver=settings.CALENDARTHAT_EVENT_EMAIL_SENDER_ADDRESS,
+            sender=envelope.get('from'),
+            receiver=envelope.get('to'),
             subject=email_data.get('subject', ''),
             body=email_data.get('text', ''),
         )
