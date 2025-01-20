@@ -35,6 +35,7 @@ async def receive_email(request):
             receiver=settings.CALENDARTHAT_EVENT_EMAIL_SENDER_ADDRESS,
             subject=email_data.get('subject', ''),
             body=email_data.get('text', ''),
+            message_id=email_data.get('headers', {}).get('Message-ID', '')
         )
         
         asyncio.create_task(create_and_send_event(email))
@@ -64,4 +65,4 @@ async def create_and_send_event(email: Email):
     
     logger.info(f"Event creation initiated with UUID: {event_uuid}")
     await new_event.formalize()
-    await send_and_save_event_reply(event_uuid, email.sender)
+    await send_and_save_event_reply(event_uuid, email.sender, email.subject, email.message_id)
