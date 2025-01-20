@@ -49,7 +49,9 @@ class EventBuilder:
     async def formalize(self):
         logger.info(f"Starting event formalization for {self.event_id}")
         
-        self.db_event = await Event.objects.aget(uuid=self.event_id)       
+        self.db_event = await Event.objects.select_related('custom_user').aget(uuid=self.event_id)       
+        # self.db_event = await Event.objects.aget(uuid=self.event_id)       
+        
         user_timezone_name = self.db_event.custom_user.email if self.db_event.custom_user is not None else None
         
         try:
