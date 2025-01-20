@@ -54,7 +54,7 @@ class EventBuilder:
         
         logger.info(f"about to get timezone name")
 
-        user_timezone_name = self.db_event.custom_user.email if self.db_event.custom_user is not None else None
+        user_timezone_name = self.db_event.custom_user.time_zone_name if self.db_event.custom_user is not None else None
         
         logger.info(f"timezone name {user_timezone_name}")
         
