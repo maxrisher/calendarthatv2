@@ -1,5 +1,5 @@
 from sendgrid import SendGridAPIClient
-from sendgrid.helpers.mail import Mail, Attachment, FileContent, FileName, FileType, Disposition
+from sendgrid.helpers.mail import Mail, Attachment, FileContent, FileName, FileType, Disposition, Header
 import os
 import asyncio
 import logging
@@ -45,10 +45,8 @@ async def send_and_save_event_reply(uuid, destination_email, original_subject, o
             html_content=msg_to_send.body,
         )
         
-        sendgrid_msg.headers = {
-            'In-Reply-To': f"<{original_message_id}>",
-            'References': f"<{original_message_id}>",
-        }
+        sendgrid_msg.header = Header('In-Reply-To', f'<{original_message_id}>')
+        sendgrid_msg.header = Header('References', f'<{original_message_id}>')
         
         encoded_file = base64.b64encode(event.ics_data.encode('utf-8')).decode()
         
