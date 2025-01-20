@@ -19,7 +19,7 @@ async def send_and_save_event_reply(uuid, destination_email, original_subject, o
     event = await Event.objects.aget(uuid=uuid)
     sg = SendGridAPIClient(os.environ.get("SENDGRID_API_KEY"))
     
-    template_email = (settings.BASE_DIR / 'email_interface' / 'new_event_email_template.txt').read_text()
+    template_email = (settings.BASE_DIR / 'email_interface' / 'new_event_email_template.html').read_text()
     
     email_body = template_email.format(
         gcal_link=event.gcal_link,
