@@ -34,17 +34,18 @@ async def send_and_save_event_reply(uuid, destination_email, original_subject, o
 
     msg_to_send = await Email.objects.acreate(subject=msg_subject, 
                         body=email_body, 
-                        sender=settings.CALENDARTHAT_EVENT_EMAIL_SENDER_ADDRESS)
+                        sender=settings.CALENDARTHAT_EVENT_EMAIL_SENDER_ADDRESS,
+                        receiver=destination_email)
     
     try:
-        sendgun_msg = Mail(
+        sendgrid_msg = Mail(
             from_email=(msg_to_send.sender, "CalendarThat"),
-            to_emails=destination_email,
+            to_emails=msg_to_send.receiver,
             subject=msg_to_send.subject,
             html_content=msg_to_send.body,
         )
         
-        sendgun_msg.personalizations[0].headers = {
+        sendgrid_msg.headers = {
             'In-Reply-To': f"<{original_message_id}>",
             'References': f"<{original_message_id}>",
         }
@@ -58,9 +59,9 @@ async def send_and_save_event_reply(uuid, destination_email, original_subject, o
             Disposition('attachment')
         )
         
-        sendgun_msg.attachment = attachment
+        sendgrid_msg.attachment = attachment
         
-        await asyncio.to_thread(sg.send, sendgun_msg)
+        await asyncio.to_thread(sg.send, sendgrid_msg)
                 
         logger.info(f"email sent! to {destination_email}")
         
