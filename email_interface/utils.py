@@ -59,8 +59,12 @@ async def send_and_save_event_reply(uuid, destination_email, original_subject, o
         
         sendgrid_msg.attachment = attachment
         
-        await asyncio.to_thread(sg.send, sendgrid_msg)
-                
+        response = await asyncio.to_thread(sg.send, sendgrid_msg)
+        
+        logger.info(response.status_code)
+        logger.info(response.body)
+        logger.info(response.headers)
+
         logger.info(f"email sent! to {destination_email}")
         
     except Exception as e:
