@@ -52,7 +52,18 @@ class EventBuilder:
         self.db_event = await Event.objects.select_related('custom_user').aget(uuid=self.event_id)       
         # self.db_event = await Event.objects.aget(uuid=self.event_id)       
         
+        logger.info(f"about to get timezone name")
+
         user_timezone_name = self.db_event.custom_user.email if self.db_event.custom_user is not None else None
+        
+        logger.info(f"timezone name {user_timezone_name}")
+        
+        custom_user = self.db_event.custom_user
+        logger.info(f"Custom user {custom_user}")
+        
+        custom_user_timezone = custom_user.time_zone_name
+        
+        logger.info(f"timezone {custom_user_timezone}")
         
         try:
             logger.debug(f"Calling LLM for event {self.event_id} with input: {self.user_input[:100]}...")
