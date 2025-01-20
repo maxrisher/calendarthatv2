@@ -66,6 +66,7 @@ async def send_and_save_event_reply(uuid, destination_email, original_subject, o
         
     except Exception as e:
         msg_to_send.failed = True
+        logger.warning(e)
         await msg_to_send.asave()
         
 def iso_8601_str_to_human_str(iso_8601_str):
