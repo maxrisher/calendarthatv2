@@ -6,6 +6,7 @@ import logging
 import base64
 from pathlib import Path
 from datetime import datetime
+import re
 
 from django.conf import settings
 
@@ -44,8 +45,8 @@ async def send_and_save_event_reply(uuid, destination_email, original_subject, o
         )
         
         sendgun_msg.personalizations[0].headers = {
-            'In-Reply-To': original_message_id,
-            'References': original_message_id,
+            'In-Reply-To': f"<{original_message_id}>",
+            'References': f"<{original_message_id}>",
         }
         
         encoded_file = base64.b64encode(event.ics_data.encode('utf-8')).decode()
@@ -70,3 +71,7 @@ async def send_and_save_event_reply(uuid, destination_email, original_subject, o
 def iso_8601_str_to_human_str(iso_8601_str):
     dttm = datetime.fromisoformat(iso_8601_str)
     return dttm.strftime("%B %d, %Y at %I:%M %p")
+
+def extract_message_id(headers_str):
+    match = re.search(r'Message-ID:\s*<([^>]+)>', headers_str)
+    return match.group(1) if match else None

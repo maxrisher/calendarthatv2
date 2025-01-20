@@ -14,7 +14,7 @@ from event_creator.models import Event
 from event_creator.new_event import EventBuilder
 
 from .models import Email
-from .utils import send_and_save_event_reply
+from .utils import send_and_save_event_reply, extract_message_id
 
 logger = logging.getLogger(__name__)
 
@@ -28,14 +28,16 @@ async def receive_email(request):
     """
     try:
         email_data = request.POST
-        envelope = json.loads(email_data.get('envelope'))
         logger.info(email_data)
+
+        envelope = json.loads(email_data.get('envelope'))
+
         email = await Email.objects.acreate(
             sender=envelope.get('from'),
             receiver=settings.CALENDARTHAT_EVENT_EMAIL_SENDER_ADDRESS,
             subject=email_data.get('subject', ''),
             body=email_data.get('text', ''),
-            message_id=email_data.get('headers', {}).get('Message-ID', '')
+            message_id=extract_message_id(email_data.get('headers', ''))
         )
         
         asyncio.create_task(create_and_send_event(email))
