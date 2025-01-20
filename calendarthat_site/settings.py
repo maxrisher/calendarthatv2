@@ -28,6 +28,8 @@ SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
 DEBUG = True
 
 ALLOWED_HOSTS = [
+    'calendarthat.com',
+    'www.calendarthat.com',
     'calendarthatv2-production.up.railway.app',
     'calendarthatv2-staging.up.railway.app',
     '127.0.0.1',
@@ -53,6 +55,7 @@ INSTALLED_APPS = [
     "accounts",
     "event_creator",
     "web_interface",
+    "email_interface",
 ]
 
 MIDDLEWARE = [
@@ -165,6 +168,8 @@ LOGIN_REDIRECT_URL = "home"
 ACCOUNT_LOGOUT_REDIRECT_URL = "home"
 
 CSRF_TRUSTED_ORIGINS = [
+    "https://www.calendarthat.com",
+    "https://calendarthat.com",
     "https://calendarthatv2-production.up.railway.app", 
     "https://calendarthatv2-staging.up.railway.app", 
     f"https://{os.getenv('RAILWAY_PUBLIC_DOMAIN')}"
@@ -201,6 +206,13 @@ LOGGING = {
             'handlers': ['console'],
             'level': 'DEBUG',
             'propagate': False
+        },
+        'email_interface': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': False
         }
     }
 }
+
+CALENDARTHAT_EVENT_EMAIL_SENDER_ADDRESS = "new@calendarthat.com"
