@@ -3,7 +3,7 @@ Outlook: {outlook_link}
 
 I've created a calendar event based on the email you sent:
 Event: {summary}
-Date: {start_datetim} to {end_datetime}
+Date: {start_datetime} to {end_datetime}
 Location: {location}
 
 Happy calendaring!
