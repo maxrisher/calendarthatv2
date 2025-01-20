@@ -1,10 +1,12 @@
 from sendgrid import SendGridAPIClient
-from sendgrid.helpers.mail import Mail
+from sendgrid.helpers.mail import Mail, Attachment, FileContent, FileName, FileType, Disposition
 import os
 import asyncio
 import logging
+import base64
+from pathlib import Path
+from datetime import datetime
 
-from django.db import transaction
 from django.conf import settings
 
 from event_creator.models import Event
@@ -15,22 +17,20 @@ logger = logging.getLogger(__name__)
 async def send_and_save_event_reply(uuid, destination_email):
     event = await Event.objects.aget(uuid=uuid)
     sg = SendGridAPIClient(os.environ.get("SENDGRID_API_KEY"))
+    
+    template_email = Path('new_event_email_template.txt').read_text()
+    
+    email_body = template_email.format(
+        gcal_link=event.gcal_link,
+        outlook_link=event.outlook_link, 
+        summary=event.summary,
+        start_datetime=iso_8601_str_to_human_str(event.start_dttm_naive),
+        end_datetime=iso_8601_str_to_human_str(event.end_dttm_naive),
+        location=event.location
+    )
 
     msg_to_send = await Email.objects.acreate(subject="Your calendar event", 
-                        body=f"""
-                        Hello!
-
-                        I've created a calendar event based on the email you sent:
-                        Event: {event.summary}
-                        Date: {event.start_dttm_naive} to {event.end_dttm_naive}
-                        Location: {event.location}
-
-                        I've attached the calendar invite (.ics file) to this email. You can
-                        open it to add this event to your calendar.
-
-                        Best regards,
-                        CalendarThat
-                        """, 
+                        body=email_body, 
                         sender=settings.CALENDARTHAT_EVENT_EMAIL_SENDER_ADDRESS)
     
     try:
@@ -41,6 +41,17 @@ async def send_and_save_event_reply(uuid, destination_email):
             plain_text_content=msg_to_send.body,
         )
         
+        encoded_file = base64.b64encode(event.ics_data.encode('utf-8')).decode()
+        
+        attachment = Attachment(
+            FileContent(encoded_file),
+            FileName('event_from_calendarthat.ics'),
+            FileType('text/calendar'),
+            Disposition('attachment')
+        )
+        
+        sendgun_msg.attachment = attachment
+        
         await asyncio.to_thread(sg.send, sendgun_msg)
                 
         logger.info(f"email sent! to {destination_email}")
@@ -48,3 +59,7 @@ async def send_and_save_event_reply(uuid, destination_email):
     except Exception as e:
         msg_to_send.failed = True
         await msg_to_send.asave()
+        
+def iso_8601_str_to_human_str(iso_8601_str):
+    dttm = datetime.fromisoformat(iso_8601_str)
+    return dttm.strftime("%B %d, %Y at %I:%M %p")
