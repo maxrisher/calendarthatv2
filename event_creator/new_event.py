@@ -64,7 +64,7 @@ class EventBuilder:
         
         #solution 3
         self.db_event = await Event.objects.aget(uuid=self.event_id)
-        get_user = sync_to_async(lambda: CustomUser.objects.get(id=self.db_event.custom_user))
+        get_user = sync_to_async(lambda: CustomUser.objects.get(id=self.db_event.custom_user_id))
         custom_user = await get_user()
         user_timezone_name = custom_user.time_zone_name     
         
