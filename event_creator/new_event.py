@@ -53,18 +53,20 @@ class EventBuilder:
         # self.db_event = await Event.objects.aget(uuid=self.event_id)
 
         #solution1
-        self.db_event = await Event.objects.select_related('custom_user').aget(uuid=self.event_id)
-        
+        # self.db_event = await Event.objects.select_related('custom_user').aget(uuid=self.event_id)
+        # user_timezone_name = self.db_event.custom_user.time_zone_name if self.db_event.custom_user else None
+
         #solution 2
-        # custom_user = CustomUser.objects.aget(id=self.db_event.custom_user)       
+        self.db_event = await Event.objects.aget(uuid=self.event_id)
+        custom_user = await CustomUser.objects.aget(id=self.db_event.custom_user)
+        user_timezone_name = custom_user.time_zone_name       
+        
         
         #old
         # user_timezone_name = None
         # if self.db_event.custom_user is not None:
         #     user_timezone_name = self.db_event.custom_user.email
         # self.db_event.custom_user.email if self.db_event.custom_user is not None else None
-
-        user_timezone_name = self.db_event.custom_user.time_zone_name if self.db_event.custom_user else None
         
         logger.debug(f"tz is: {user_timezone_name}")
         
