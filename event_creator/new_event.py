@@ -27,6 +27,7 @@ import logging
 
 from django.core.exceptions import ValidationError
 
+from accounts.models import CustomUser
 from event_creator.models import Event
 from event_creator.llm_caller import LlmCaller
 
@@ -49,11 +50,21 @@ class EventBuilder:
     async def formalize(self):
         logger.info(f"Starting event formalization for {self.event_id}")
         
-        self.db_event = await Event.objects.aget(uuid=self.event_id)       
+        # self.db_event = await Event.objects.aget(uuid=self.event_id)
+
+        #solution1
+        self.db_event = await Event.objects.select_related('custom_user').aget(uuid=self.event_id)
+        
+        #solution 2
+        # custom_user = CustomUser.objects.aget(id=self.db_event.custom_user)       
+        
+        #old
         # user_timezone_name = None
         # if self.db_event.custom_user is not None:
         #     user_timezone_name = self.db_event.custom_user.email
-        self.db_event.custom_user.email if self.db_event.custom_user is not None else None
+        # self.db_event.custom_user.email if self.db_event.custom_user is not None else None
+
+        user_timezone_name = self.db_event.custom_user.timezone_name if self.db_event.custom_user else None
         
         try:
             logger.debug(f"Calling LLM for event {self.event_id} with input: {self.user_input[:100]}...")
