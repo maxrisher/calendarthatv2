@@ -64,7 +64,7 @@ class EventBuilder:
         #     user_timezone_name = self.db_event.custom_user.email
         # self.db_event.custom_user.email if self.db_event.custom_user is not None else None
 
-        user_timezone_name = self.db_event.custom_user.timezone_name if self.db_event.custom_user else None
+        user_timezone_name = self.db_event.custom_user.time_zone_name if self.db_event.custom_user else None
         
         try:
             logger.debug(f"Calling LLM for event {self.event_id} with input: {self.user_input[:100]}...")
