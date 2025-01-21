@@ -57,8 +57,8 @@ class EventBuilder:
         # self.db_event = await Event.objects.aget(uuid=self.event_id)
 
         #solution1
-        # self.db_event = await Event.objects.select_related('custom_user').aget(uuid=self.event_id)
-        # user_timezone_name = self.db_event.custom_user.time_zone_name if self.db_event.custom_user else None
+        self.db_event = await Event.objects.select_related('custom_user').aget(uuid=self.event_id)
+        user_timezone_name = self.db_event.custom_user.time_zone_name if self.db_event.custom_user else None
 
         #solution 2
         # self.db_event = await Event.objects.aget(uuid=self.event_id)
@@ -66,10 +66,10 @@ class EventBuilder:
         # user_timezone_name = custom_user.time_zone_name       
         
         #solution 3
-        self.db_event = await Event.objects.aget(uuid=self.event_id)
-        get_user = sync_to_async(lambda: CustomUser.objects.get(id=self.db_event.custom_user_id))
-        custom_user = await get_user()
-        user_timezone_name = custom_user.time_zone_name     
+        # self.db_event = await Event.objects.aget(uuid=self.event_id)
+        # get_user = sync_to_async(lambda: CustomUser.objects.get(id=self.db_event.custom_user_id))
+        # custom_user = await get_user()
+        # user_timezone_name = custom_user.time_zone_name     
         
         #old
         # user_timezone_name = None
@@ -95,8 +95,8 @@ class EventBuilder:
             self.db_event.description = llm_caller.response.get('description')
             self.db_event.build_status = "DONE"
             self.db_event.build_time = datetime.now(timezone.utc) - self.db_event.build_start
-            # await sync_to_async(self.db_event.full_clean)()
-            
+
+            logger.debug(f"Validating event {self.uuid}")
             raise_if_invalid_ics(
                 name=self.db_event.summary,
                 begin=self.db_event.start_dttm_aware or self.db_event.start_dttm_naive,
