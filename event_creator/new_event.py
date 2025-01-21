@@ -24,6 +24,7 @@
 
 from datetime import datetime, timezone
 import logging
+from asgiref.sync import sync_to_async
 
 from django.core.exceptions import ValidationError
 
@@ -57,10 +58,15 @@ class EventBuilder:
         # user_timezone_name = self.db_event.custom_user.time_zone_name if self.db_event.custom_user else None
 
         #solution 2
-        self.db_event = await Event.objects.aget(uuid=self.event_id)
-        custom_user = await CustomUser.objects.aget(id=self.db_event.custom_user_id)
-        user_timezone_name = custom_user.time_zone_name       
+        # self.db_event = await Event.objects.aget(uuid=self.event_id)
+        # custom_user = await CustomUser.objects.aget(id=self.db_event.custom_user_id)
+        # user_timezone_name = custom_user.time_zone_name       
         
+        #solution 3
+        self.db_event = await Event.objects.aget(uuid=self.event_id)
+        get_user = sync_to_async(lambda: CustomUser.objects.get(id=self.db_event.custom_user))
+        custom_user = await get_user()
+        user_timezone_name = custom_user.time_zone_name     
         
         #old
         # user_timezone_name = None
