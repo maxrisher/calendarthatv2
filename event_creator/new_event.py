@@ -58,7 +58,7 @@ class EventBuilder:
 
         #solution 2
         self.db_event = await Event.objects.aget(uuid=self.event_id)
-        custom_user = await CustomUser.objects.aget(id=self.db_event.custom_user)
+        custom_user = await CustomUser.objects.aget(id=self.db_event.custom_user_id)
         user_timezone_name = custom_user.time_zone_name       
         
         
