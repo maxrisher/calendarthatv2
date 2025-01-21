@@ -33,6 +33,8 @@ from accounts.models import CustomUser
 from event_creator.models import Event
 from event_creator.llm_caller import LlmCaller
 
+from .utils import raise_if_invalid_ics
+
 logger = logging.getLogger(__name__)
 
 class EventBuilder:
@@ -93,7 +95,16 @@ class EventBuilder:
             self.db_event.description = llm_caller.response.get('description')
             self.db_event.build_status = "DONE"
             self.db_event.build_time = datetime.now(timezone.utc) - self.db_event.build_start
-            await sync_to_async(self.db_event.full_clean)()
+            # await sync_to_async(self.db_event.full_clean)()
+            
+            raise_if_invalid_ics(
+                name=self.db_event.summary,
+                begin=self.db_event.start_dttm_aware or self.db_event.start_dttm_naive,
+                end=self.db_event.end_dttm_aware or self.db_event.end_dttm_naive,
+                description=self.db_event.description,
+                location=self.db_event.location
+                )
+            
             await self.db_event.asave()
 
         except ValidationError as e:
