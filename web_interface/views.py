@@ -27,7 +27,7 @@ async def create_event_web(request):
     user = await request.auser()
     event_text = request.POST.get('event_text', '')
 
-    logger.info(f"New event creation requested by user {request.user.id if request.user.is_authenticated else 'anonymous'}")
+    logger.info(f"New event creation requested by user {user.id if user.is_authenticated else 'anonymous'}")
     
     event_uuid = uuid.uuid4()
 
