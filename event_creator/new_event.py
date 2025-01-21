@@ -50,12 +50,15 @@ class EventBuilder:
         logger.info(f"Starting event formalization for {self.event_id}")
         
         self.db_event = await Event.objects.aget(uuid=self.event_id)       
-        use_timezone_name = self.db_event.custom_user.email if self.db_event.custom_user is not None else None
+        # user_timezone_name = None
+        # if self.db_event.custom_user is not None:
+        #     user_timezone_name = self.db_event.custom_user.email
+        self.db_event.custom_user.email if self.db_event.custom_user is not None else None
         
         try:
             logger.debug(f"Calling LLM for event {self.event_id} with input: {self.user_input[:100]}...")
             llm_caller = LlmCaller()
-            await llm_caller.text_to_ics(self.user_input, use_timezone_name)
+            await llm_caller.text_to_ics(self.user_input, user_timezone_name)
             
             logger.debug(f"LLM call successful for event {self.event_id}")
             
