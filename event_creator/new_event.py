@@ -66,6 +66,8 @@ class EventBuilder:
 
         user_timezone_name = self.db_event.custom_user.time_zone_name if self.db_event.custom_user else None
         
+        logger.debug(f"tz is: {user_timezone_name}")
+        
         try:
             logger.debug(f"Calling LLM for event {self.event_id} with input: {self.user_input[:100]}...")
             llm_caller = LlmCaller()
