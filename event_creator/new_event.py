@@ -25,6 +25,7 @@
 from datetime import datetime, timezone
 import logging
 from asgiref.sync import sync_to_async
+import traceback
 
 from django.core.exceptions import ValidationError
 
@@ -103,6 +104,8 @@ class EventBuilder:
         except Exception as e:
             self.db_event.build_status = "FAILED"
             logger.error(f"Unexpected error creating event {self.event_id}: {str(e)}")
+            logger.error(f"Full traceback for event {self.event_id}:")
+            logger.error(''.join(traceback.format_exception(type(e), e, e.__traceback__)))
             await self.db_event.asave()
 
         logger.info(f"Event {self.event_id} successfully formalized in {self.db_event.build_time}")
