@@ -93,7 +93,7 @@ class EventBuilder:
             self.db_event.description = llm_caller.response.get('description')
             self.db_event.build_status = "DONE"
             self.db_event.build_time = datetime.now(timezone.utc) - self.db_event.build_start
-            self.db_event.full_clean()
+            await sync_to_async(self.db_event.full_clean)()
             await self.db_event.asave()
 
         except ValidationError as e:
