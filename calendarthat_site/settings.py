@@ -173,7 +173,8 @@ CSRF_TRUSTED_ORIGINS = [
     "https://calendarthat.com",
     "https://calendarthatv2-production.up.railway.app", 
     "https://calendarthatv2-staging.up.railway.app", 
-    f"https://{os.getenv('RAILWAY_PUBLIC_DOMAIN')}"
+    f"https://{os.getenv('RAILWAY_PUBLIC_DOMAIN')}",
+    f'chrome-extension://{os.getenv('CHROME_EXTENSION_ID')}'
     ]
 
 LOGGING = {
