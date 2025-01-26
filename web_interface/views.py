@@ -4,6 +4,7 @@ import logging
 
 from django.shortcuts import render
 from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 
 from event_creator.models import Event
 from event_creator.new_event import EventBuilder
@@ -18,6 +19,7 @@ def home(request):
     """
     return render(request, 'web_interface/home.html')
 
+@csrf_exempt # NB: Mallicious websites will be able to make requests through our users to this endpoint
 async def create_event_web(request):
     """
     [INTERFACE] Initiates asynchronous calendar event creation process
