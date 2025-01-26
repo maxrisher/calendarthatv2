@@ -218,3 +218,10 @@ LOGGING = {
 }
 
 CALENDARTHAT_EVENT_EMAIL_SENDER_ADDRESS = "new@calendarthat.com"
+
+CORS_ALLOWED_ORIGINS = [
+    f'chrome-extension://{os.getenv('CHROME_EXTENSION_ID')}'
+]
+
+# Since you're sending credentials, you also need:
+CORS_ALLOW_CREDENTIALS = True
