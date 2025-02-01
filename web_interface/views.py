@@ -32,7 +32,6 @@ async def create_event_web(request):
     Request GET: {request.GET}
     Request POST: {request.POST}
     Request Headers: {dict(request.headers)}
-    Request Body: {request.body}
     """)
     user = await request.auser()
     event_text = request.POST.get('event_text', '')
