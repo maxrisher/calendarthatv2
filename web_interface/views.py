@@ -26,6 +26,14 @@ async def create_event_web(request):
     [IN] HTTP POST request with event_text and optional authenticated user
     [OUT] JSON response with event UUID for tracking
     """
+    logger.debug(f"""
+    Request Method: {request.method}
+    Request Path: {request.path}
+    Request GET: {request.GET}
+    Request POST: {request.POST}
+    Request Headers: {dict(request.headers)}
+    Request Body: {request.body}
+    """)
     user = await request.auser()
     event_text = request.POST.get('event_text', '')
 
