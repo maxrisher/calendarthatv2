@@ -121,7 +121,6 @@ async def check_auth(request):
     else:
         return JsonResponse({"error": "Not authenticated"}, status=401) 
 
-@login_required    
 @csrf_exempt # NB: Mallicious websites will be able to make requests through our users to this endpoint
 async def create_event_browser_extension(request):
     """
@@ -138,6 +137,11 @@ async def create_event_browser_extension(request):
     """)
     user = await request.auser()
     event_text = request.POST.get('event_text', '')
+    
+    if not user.is_authenticated:
+        return JsonResponse({
+            "error": "Unauthorized"
+        }, status=401)
 
     logger.info(f"New event creation requested by user {user.id if user.is_authenticated else 'anonymous'}")
     
