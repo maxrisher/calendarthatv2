@@ -55,6 +55,7 @@ async def create_event_web(request):
         "event_uuid": str(event_uuid)
     })
 
+@csrf_exempt # NB: Mallicious websites will be able to make requests through our users to this endpoint
 async def get_event_status(request):
     """
     [INTERFACE] Retrieves current status of event processing
@@ -74,6 +75,7 @@ async def get_event_status(request):
             "error": "Event not found"
         }, status=404)
 
+@csrf_exempt # NB: Mallicious websites will be able to make requests through our users to this endpoint
 async def download_calendar_event(request):
     """
     [INTERFACE] Provides calendar event download data if processing complete
