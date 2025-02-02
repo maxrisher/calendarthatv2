@@ -111,8 +111,10 @@ async def download_calendar_event(request):
             "error": "Unexpected error occured"
         }, status=500)
 
-async def check_auth(request):    
-    if request.user.is_authenticated:
+async def check_auth(request):
+    user = await request.auser()
+    
+    if user.is_authenticated:
         return JsonResponse({"message": "Authenticated"}, status=200) 
     else:
         return JsonResponse({"error": "Not authenticated"}, status=401) 
