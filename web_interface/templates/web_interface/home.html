@@ -9,8 +9,18 @@
                class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                placeholder="Enter your event details (e.g., 'Lunch with Sarah next Tuesday at 1pm at Cafe Luna')">
         <button type="submit" 
+                id="submit-button"
                 class="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors">
-            Create Event
+            <span id="button-default" class="flex items-center justify-center">
+                Create Event
+            </span>
+            <span id="button-loading" class="hidden items-center justify-center">
+                <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Hold on, event being created!
+            </span>
         </button>
     </form>
 
@@ -23,49 +33,80 @@
         document.getElementById('event-form').onsubmit = async (e) => {
             e.preventDefault();
             
+            // Get button elements
+            const buttonDefault = document.getElementById('button-default');
+            const buttonLoading = document.getElementById('button-loading');
+            const submitButton = document.getElementById('submit-button');
+            
+            // Show loading state
+            buttonDefault.classList.add('hidden');
+            buttonLoading.classList.remove('hidden');
+            buttonLoading.classList.add('flex');
+            submitButton.disabled = true;
+            
             const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
             const resultLinks = document.getElementById('result-links'); 
             
-            // Create FormData object to match regular form submission
-            const formData = new FormData();
-            formData.append('event_text', document.getElementById('event-text').value);
-            
-            const createResponse = await fetch("{% url 'create_event_web' %}", {
-                method: 'POST',
-                headers: {
-                    'X-CSRFToken': csrfToken
-                },
-                body: formData  // Send as form data instead of JSON
-            });
-            const { event_uuid } = await createResponse.json();
-            console.log('event_uuid = ', event_uuid)
-
-            const pollStatus = async () => {
-                const statusResponse = await fetch(`{% url 'get_event_status' %}?event_uuid=${event_uuid}`);
-                const { build_status } = await statusResponse.json();
-                if (build_status === 'DONE') {
-                    console.log("build_status done");
-                     // Fetch calendar links
-                    const downloadResponse = await fetch(`{% url 'download_calendar_event' %}?event_uuid=${event_uuid}`);
-                    const links = await downloadResponse.json();
-                    
-                    // Display the links
-                    resultLinks.innerHTML = `
-                        <a href="${links.gcal_link}" class="block w-full text-center bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors mb-3">Add to Google Calendar</a>
-                        <a href="${links.outlook_link}" class="block w-full text-center bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors mb-3">Add to Outlook</a>
-                        <p class="text-gray-600 text-center">ICS download coming soon!</p>
-                    `;
-                } else if (build_status === 'FAILED') {
-                    resultLinks.innerHTML = '<p>Something went wrong. Please try again.</p>';
-                } else {
-                    console.log("build_status started")
-                    // Continue polling if status is still "STARTED"
-                    setTimeout(pollStatus, 2000); // Poll every 2 seconds
-                }
-            };
-            
-            pollStatus(); // Start polling
- 
+            try {
+                // Create FormData object to match regular form submission
+                const formData = new FormData();
+                formData.append('event_text', document.getElementById('event-text').value);
+                
+                const createResponse = await fetch("{% url 'create_event_web' %}", {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': csrfToken
+                    },
+                    body: formData
+                });
+                const { event_uuid } = await createResponse.json();
+                
+                const pollStatus = async () => {
+                    const statusResponse = await fetch(`{% url 'get_event_status' %}?event_uuid=${event_uuid}`);
+                    const { build_status } = await statusResponse.json();
+                    if (build_status === 'DONE') {
+                        const downloadResponse = await fetch(`{% url 'download_calendar_event' %}?event_uuid=${event_uuid}`);
+                        const links = await downloadResponse.json();
+                        
+                        resultLinks.innerHTML = `
+                            <a href="${links.gcal_link}" class="block w-full text-center bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors mb-3">Add to Google Calendar</a>
+                            <a href="${links.outlook_link}" class="block w-full text-center bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors mb-3">Add to Outlook</a>
+                            <p class="text-gray-600 text-center">ICS download coming soon!</p>
+                        `;
+                        
+                        // Reset button state
+                        buttonLoading.classList.remove('flex');
+                        buttonLoading.classList.add('hidden');
+                        buttonDefault.classList.remove('hidden');
+                        submitButton.disabled = false;
+                        
+                    } else if (build_status === 'FAILED') {
+                        resultLinks.innerHTML = '<p>Something went wrong. Please try again.</p>';
+                        
+                        // Reset button state
+                        buttonLoading.classList.remove('flex');
+                        buttonLoading.classList.add('hidden');
+                        buttonDefault.classList.remove('hidden');
+                        submitButton.disabled = false;
+                        
+                    } else {
+                        // Continue polling if status is still "STARTED"
+                        setTimeout(pollStatus, 2000);
+                    }
+                };
+                
+                pollStatus();
+                
+            } catch (error) {
+                console.error('Error:', error);
+                resultLinks.innerHTML = '<p>Something went wrong. Please try again.</p>';
+                
+                // Reset button state
+                buttonLoading.classList.remove('flex');
+                buttonLoading.classList.add('hidden');
+                buttonDefault.classList.remove('hidden');
+                submitButton.disabled = false;
+            }
         };
     </script>
 
