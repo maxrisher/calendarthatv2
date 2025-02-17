@@ -6,9 +6,12 @@
 </head>
 <body class="bg-gray-50">
    <nav class="flex justify-between items-center p-4 bg-white shadow-sm">
-       <h1 class="text-2xl font-bold">CalendarThat</h1>
+       <h1 class="text-2xl font-bold">
+        <a href="{% url 'home' %}">CalendarThat</a>
+       </h1>
        <div class="space-x-4">
            {% if user.is_authenticated %}
+               <a href="{% url 'user_settings' %}" class="text-blue-600 hover:text-blue-800">Settings</a>
                <a href="{% url 'account_logout' %}" class="text-blue-600 hover:text-blue-800">Log Out</a>
            {% else %}
                <a href="{% url 'account_login' %}" class="text-blue-600 hover:text-blue-800">Log In</a>
