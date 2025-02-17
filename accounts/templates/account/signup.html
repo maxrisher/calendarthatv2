@@ -4,7 +4,17 @@
 <h2>Sign Up</h2>
 <form method="post">
     {% csrf_token %}
-    {{ form.as_p }}
+
+
+    <label for="id_email">Email</label>
+    {{ form.email }}
+
+    <label>Password</label>
+    {{ form.password1 }}
+
+    <label>Time Zone</label>
+    {{ form.time_zone_name }}
+
     <button type="submit">Sign Up</button>
 </form>
 {% endblock %}
