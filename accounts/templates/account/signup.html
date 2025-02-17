@@ -55,7 +55,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const select = document.getElementById('id_time_zone_name');
     
     if (select && timezone) {
-        // const option = Array.from(select.options).find(opt => opt.value === timezone);
         const tz_options = Array.from(select.options)
         const predicted_tz = tz_options.find(tz_option => tz_option.value === browser_timezone)
 
