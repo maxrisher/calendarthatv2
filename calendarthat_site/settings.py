@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     "allauth.account",
     "allauth.socialaccount",
     "corsheaders",
+    "anymail",
 
     #local
     "accounts",
@@ -149,8 +150,6 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
-
 AUTHENTICATION_BACKENDS = (
     "django.contrib.auth.backends.ModelBackend",
     "allauth.account.auth_backends.AuthenticationBackend",
@@ -225,6 +224,7 @@ ACCOUNT_SIGNUP_PASSWORD_ENTER_TWICE = True
 ACCOUNT_SESSION_REMEMBER = True
 ACCOUNT_AUTHENTICATION_METHOD = 'email'
 ACCOUNT_UNIQUE_EMAIL = True
+ACCOUNT_EMAIL_VERIFICATION = "none"
 
 ACCOUNT_LOGOUT_ON_GET = True
 ACCOUNT_LOGOUT_REDIRECT_URL = "home"
@@ -233,4 +233,18 @@ LOGIN_REDIRECT_URL = "home"
 
 ACCOUNT_FORMS = {
     'signup': 'accounts.forms.CustomSignupForm'
+}
+
+"""
+Django anymail with sendgrid
+"""
+EMAIL_BACKEND = "anymail.backends.sendgrid.EmailBackend"
+
+DEFAULT_FROM_EMAIL = "no-reply@calendarthat.com"
+SERVER_EMAIL = "no-reply@calendarthat.com"
+
+ANYMAIL = {
+    "SENDGRID_API_KEY": os.environ.get("SENDGRID_API_KEY"),
+    "SENDGRID_GENERATE_MESSAGE_ID": True,
+    "SENDGRID_MERGE_METADATA": True,
 }
