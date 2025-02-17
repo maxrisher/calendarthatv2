@@ -1,20 +1,68 @@
 {% extends "web_interface/base.html" %}
 
 {% block content %}
-<h2>Sign Up</h2>
-<form method="post">
-    {% csrf_token %}
+<div class="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-md">
+    <h2 class="text-2xl font-bold mb-6">Sign Up</h2>
+    <form method="post">
+        {% csrf_token %}
+        
+        <div class="mb-4">
+            <label class="block text-gray-700 text-sm font-bold mb-2" for="{{ form.email.id_for_label }}">
+                {{ form.email.label }}
+            </label>
+            {{ form.email }}
+            {% for error in form.email.errors %}
+            <p class="text-red-500 text-xs italic">{{ error }}</p>
+            {% endfor %}
+        </div>
+        <div class="mb-4">
+            <label class="block text-gray-700 text-sm font-bold mb-2" for="{{ form.password1.id_for_label }}">
+                {{ form.password1.label }}
+            </label>
+            {{ form.password1 }}
+            {% for error in form.password1.errors %}
+            <p class="text-red-500 text-xs italic">{{ error }}</p>
+            {% endfor %}
+        </div>
+        <div class="mb-4">
+            <label class="block text-gray-700 text-sm font-bold mb-2" for="{{ form.password2.id_for_label }}">
+                {{ form.password2.label }}
+            </label>
+            {{ form.password2 }}
+            {% for error in form.password2.errors %}
+            <p class="text-red-500 text-xs italic">{{ error }}</p>
+            {% endfor %}
+        </div>
+        <div class="mb-4">
+            <label class="block text-gray-700 text-sm font-bold mb-2" for="{{ form.time_zone_name.id_for_label }}">
+                {{ form.time_zone_name.label }}
+            </label>
+            {{ form.time_zone_name }}
+            {% for error in form.time_zone_name.errors %}
+            <p class="text-red-500 text-xs italic">{{ error }}</p>
+            {% endfor %}
+        </div>
+        <button type="submit" class="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors">
+            Sign Up
+        </button>
+    </form>
+</div>
 
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Attempt to get user's timezone
+    const browser_timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const select = document.getElementById('id_time_zone_name');
+    
+    if (select && timezone) {
+        // const option = Array.from(select.options).find(opt => opt.value === timezone);
+        const tz_options = Array.from(select.options)
+        const predicted_tz = tz_options.find(tz_option => tz_option.value === browser_timezone)
 
-    <label for="id_email">Email</label>
-    {{ form.email }}
-
-    <label>Password</label>
-    {{ form.password1 }}
-
-    <label>Time Zone</label>
-    {{ form.time_zone_name }}
-
-    <button type="submit">Sign Up</button>
-</form>
+        if (predicted_tz) {
+            predicted_tz.selected = true;
+        }
+    }
+});
+</script>
 {% endblock %}
