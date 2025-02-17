@@ -13,7 +13,7 @@ The information we must specify for each calendar event is as follows:
 
 Watch out for the following gotchas:
 - Communicating across timezones: if Jane (in London) is texting Aakarsh (in San Francisco) and asks to meet at 1 pm, we need to decide based on context if this means 1 pm America/Los_Angeles or 1 pm Europe/London
-- Wall of text: sometimes users may 
+- Wall of text: sometimes users may send you an entire webpage which may have lots of irrelevant information. Do your best to find the calendar event in the input you receive.
 - Unclear end: often events will not have a clear end time (e.g., let's get coffee at 3 pm). Do you best to estimate a reasonable duration for the event.
 - Multiple calendar events: users may accidentally send you two or more events. Just create the first one.
 
