@@ -1,10 +1,27 @@
 {% extends "web_interface/base.html" %}
 
 {% block content %}
-<form method="POST">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Save</button>
-</form>
-
+<div class="max-w-md mx-auto p-6">
+    <h2 class="text-2xl font-bold mb-6">User Settings</h2>
+    <form method="POST" class="space-y-4">
+        {% csrf_token %}
+        
+        {% for field in form.visible_fields %}
+            <div>
+                <label for="{{ field.id_for_label }}" class="block text-gray-700 font-medium mb-1">
+                    {{ field.label }}
+                </label>
+                {{ field }}
+                {% for error in field.errors %}
+                    <p class="text-red-500 text-sm">{{ error }}</p>
+                {% endfor %}
+            </div>
+        {% endfor %}
+        
+        <button type="submit"
+                class="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors">
+            Save
+        </button>
+    </form>
+</div>
 {% endblock %}
