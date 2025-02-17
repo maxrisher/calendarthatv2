@@ -33,3 +33,13 @@ class CustomSignupForm(SignupForm):
         user.time_zone_name = self.cleaned_data['time_zone_name']
         user.save()
         return user
+    
+class UserSettingsForm(forms.ModelForm):
+    TIMEZONES = sorted(list(available_timezones()))
+    time_zone_name = forms.ChoiceField(
+        choices = [(tz, tz) for tz in TIMEZONES]
+    )
+    
+    class Meta:
+        model = CustomUser
+        fields = ['time_zone_name']
