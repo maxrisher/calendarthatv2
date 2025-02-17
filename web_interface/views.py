@@ -4,6 +4,8 @@ import logging
 
 from django.shortcuts import render
 from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.decorators import login_required
 
 from event_creator.models import Event
 from event_creator.new_event import EventBuilder
@@ -24,6 +26,13 @@ async def create_event_web(request):
     [IN] HTTP POST request with event_text and optional authenticated user
     [OUT] JSON response with event UUID for tracking
     """
+    logger.debug(f"""
+    Request Method: {request.method}
+    Request Path: {request.path}
+    Request GET: {request.GET}
+    Request POST: {request.POST}
+    Request Headers: {dict(request.headers)}
+    """)
     user = await request.auser()
     event_text = request.POST.get('event_text', '')
 
@@ -46,6 +55,7 @@ async def create_event_web(request):
         "event_uuid": str(event_uuid)
     })
 
+@csrf_exempt # NB: Mallicious websites will be able to make requests through our users to this endpoint
 async def get_event_status(request):
     """
     [INTERFACE] Retrieves current status of event processing
@@ -65,6 +75,7 @@ async def get_event_status(request):
             "error": "Event not found"
         }, status=404)
 
+@csrf_exempt # NB: Mallicious websites will be able to make requests through our users to this endpoint
 async def download_calendar_event(request):
     """
     [INTERFACE] Provides calendar event download data if processing complete
@@ -101,4 +112,52 @@ async def download_calendar_event(request):
         return JsonResponse({
             "error": "Unexpected error occured"
         }, status=500)
+
+async def check_auth(request):
+    user = await request.auser()
     
+    if user.is_authenticated:
+        return JsonResponse({"message": "Authenticated"}, status=200) 
+    else:
+        return JsonResponse({"error": "Not authenticated"}, status=401) 
+
+@csrf_exempt # NB: Mallicious websites will be able to make requests through our users to this endpoint
+async def create_event_browser_extension(request):
+    """
+    [INTERFACE] Initiates asynchronous calendar event creation process
+    [IN] HTTP POST request with event_text and optional authenticated user
+    [OUT] JSON response with event UUID for tracking
+    """
+    logger.debug(f"""
+    Request Method: {request.method}
+    Request Path: {request.path}
+    Request GET: {request.GET}
+    Request POST: {request.POST}
+    Request Headers: {dict(request.headers)}
+    """)
+    user = await request.auser()
+    event_text = request.POST.get('event_text', '')
+    
+    if not user.is_authenticated:
+        return JsonResponse({
+            "error": "Unauthorized"
+        }, status=401)
+
+    logger.info(f"New event creation requested by user {user.id if user.is_authenticated else 'anonymous'}")
+    
+    event_uuid = uuid.uuid4()
+
+    await Event.objects.acreate(
+        uuid=event_uuid, 
+        custom_user=user if user.is_authenticated else None, 
+        user_input=event_text
+        )
+
+    new_event = EventBuilder(event_uuid, event_text)
+    asyncio.create_task(new_event.formalize())
+    
+    logger.info(f"Event creation initiated with UUID: {event_uuid}")
+    
+    return JsonResponse({
+        "event_uuid": str(event_uuid)
+    })
