@@ -11,8 +11,11 @@
        </h1>
        <div class="space-x-4">
            {% if user.is_authenticated %}
-               <a href="{% url 'user_settings' %}" class="text-blue-600 hover:text-blue-800">Settings</a>
-               <a href="{% url 'account_logout' %}" class="text-blue-600 hover:text-blue-800">Log Out</a>
+               <a href="{% url 'user_settings' %}">
+                <div class="w-10 h-10 bg-blue-300 rounded-full flex items-center justify-center text-white">
+                    {{ user.email|slice:":2"|upper }}
+                </div>
+                </a>
            {% else %}
                <a href="{% url 'account_login' %}" class="text-blue-600 hover:text-blue-800">Log In</a>
                <a href="{% url 'account_signup' %}" class="text-blue-600 hover:text-blue-800">Sign Up</a>
