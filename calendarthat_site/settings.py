@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     "allauth.socialaccount",
     "corsheaders",
     "anymail",
+    "widget_tweaks",
 
     #local
     "accounts",
