@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
    <title>CalendarThat</title>
    <script src="https://cdn.tailwindcss.com"></script>
 </head>
@@ -15,10 +18,10 @@
                     {{ user.email|slice:":2"|upper }}
                 </a>
            {% else %}
-               <a href="{% url 'account_login' %}" class="flex w-24 h-10 bg-blue-500 rounded-md text-white items-center justify-center">
+               <a href="{% url 'account_login' %}" class="flex w-20 h-10 bg-blue-500 rounded-full text-white items-center justify-center">
                 Log In
             </a>
-               <a href="{% url 'account_signup' %}" class="flex w-24 h-10 font-medium items-center justify-center">
+               <a href="{% url 'account_signup' %}" class="flex w-20 h-10 border border gray-900 rounded-full font-medium items-center justify-center">
                 Sign Up
             </a>
            {% endif %}
