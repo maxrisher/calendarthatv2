@@ -51,6 +51,8 @@ INSTALLED_APPS = [
     "allauth.account",
     "allauth.socialaccount",
     "corsheaders",
+    "anymail",
+    "widget_tweaks",
 
     #local
     "accounts",
@@ -139,10 +141,9 @@ USE_I18N = True
 
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # Default primary key field type
@@ -150,24 +151,12 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
-
 AUTHENTICATION_BACKENDS = (
     "django.contrib.auth.backends.ModelBackend",
     "allauth.account.auth_backends.AuthenticationBackend",
 )
 
 SITE_ID = 1
-
-ACCOUNT_EMAIL_REQUIRED = True
-ACCOUNT_USERNAME_REQUIRED = False
-ACCOUNT_SIGNUP_PASSWORD_ENTER_TWICE = False
-ACCOUNT_SESSION_REMEMBER = True
-ACCOUNT_AUTHENTICATION_METHOD = 'email'
-ACCOUNT_UNIQUE_EMAIL = True
-
-LOGIN_REDIRECT_URL = "home"
-ACCOUNT_LOGOUT_REDIRECT_URL = "home"
 
 CSRF_TRUSTED_ORIGINS = [
     "https://www.calendarthat.com",
@@ -226,3 +215,37 @@ CORS_ALLOWED_ORIGINS = [
 
 # Since you're sending credentials, you also need:
 CORS_ALLOW_CREDENTIALS = True
+
+"""
+Django Allauth
+"""
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_USERNAME_REQUIRED = False
+ACCOUNT_SIGNUP_PASSWORD_ENTER_TWICE = True
+ACCOUNT_SESSION_REMEMBER = True
+ACCOUNT_AUTHENTICATION_METHOD = 'email'
+ACCOUNT_UNIQUE_EMAIL = True
+ACCOUNT_EMAIL_VERIFICATION = "none"
+
+ACCOUNT_LOGOUT_ON_GET = True
+ACCOUNT_LOGOUT_REDIRECT_URL = "home"
+
+LOGIN_REDIRECT_URL = "home"
+
+ACCOUNT_FORMS = {
+    'signup': 'accounts.forms.CustomSignupForm'
+}
+
+"""
+Django anymail with sendgrid
+"""
+EMAIL_BACKEND = "anymail.backends.sendgrid.EmailBackend"
+
+DEFAULT_FROM_EMAIL = "no-reply@calendarthat.com"
+SERVER_EMAIL = "no-reply@calendarthat.com"
+
+ANYMAIL = {
+    "SENDGRID_API_KEY": os.environ.get("SENDGRID_API_KEY"),
+    "SENDGRID_GENERATE_MESSAGE_ID": True,
+    "SENDGRID_MERGE_METADATA": True,
+}
