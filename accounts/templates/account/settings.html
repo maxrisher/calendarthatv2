@@ -1,27 +1,35 @@
-{% extends "web_interface/base.html" %}
-
+{% extends "web_interface/base.html" %} 
+{% load widget_tweaks %}
 {% block content %}
-<div class="max-w-md mx-auto p-6">
-    <h2 class="text-2xl font-bold mb-6">User Settings</h2>
-    <form method="POST" class="space-y-4">
-        {% csrf_token %}
-        
-        {% for field in form.visible_fields %}
-            <div>
-                <label for="{{ field.id_for_label }}" class="block text-gray-700 font-medium mb-1">
-                    {{ field.label }}
-                </label>
-                {{ field }}
-                {% for error in field.errors %}
-                    <p class="text-red-500 text-sm">{{ error }}</p>
-                {% endfor %}
+<div class="px-4">
+    <div class="max-w-md p-6 border bg-white shadow-sm rounded-lg mx-auto mt-14">
+        <h2 class="text-2xl font-bold mb-6">User Settings</h2>
+        <form method="POST" class="space-y-4">
+            {% csrf_token %}
+            
+            {% for field in form.visible_fields %}
+                <div>
+                    <label for="{{ field.id_for_label }}" class="block text-gray-700 font-medium mb-1">
+                        {{ field.label }}
+                    </label>
+                    {{ field|add_class:"bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2" }}
+                    {% for error in field.errors %}
+                        <p class="text-red-500 text-sm">{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+            <div class="flex space-x-1">
+                <button type="submit"
+                        class="flex w-20 h-10 bg-blue-500 rounded-full text-white items-center justify-center">
+                    Save
+                </button>
+                <a class="flex w-20 h-10 border border gray-900 rounded-full font-medium items-center justify-center" href="{% url 'account_logout' %}">
+                    Sign out
+                </a>
             </div>
-        {% endfor %}
-        
-        <button type="submit"
-                class="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors">
-            Save
-        </button>
-    </form>
+        </form>
+    </div>
 </div>
 {% endblock %}
+
+<!-- w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors -->
