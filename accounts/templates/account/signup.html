@@ -64,9 +64,10 @@
     document.addEventListener('DOMContentLoaded', function() {
         // Attempt to get user's timezone
         const browser_timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        console.log(browser_timezone)
         const select = document.getElementById('id_time_zone_name');
         
-        if (select && timezone) {
+        if (select && browser_timezone) {
             const tz_options = Array.from(select.options)
             const predicted_tz = tz_options.find(tz_option => tz_option.value === browser_timezone)
     
