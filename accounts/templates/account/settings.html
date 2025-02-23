@@ -3,13 +3,10 @@
 {% block content %}
 <div class="px-4">
     <div class="max-w-md p-6 border bg-white shadow-sm rounded-lg mx-auto mt-14">
-        <h2 class="text-2xl font-bold mb-6">Log In</h2>
-        <form method="post" class="space-y-4">
+        <h2 class="text-2xl font-bold mb-6">Settings</h2>
+        <form method="POST" class="space-y-4">
             {% csrf_token %}
             
-            {{ form.non_field_errors }}
-            
-            <!-- A quick example if you want to style each field individually -->
             {% for field in form.visible_fields %}
                 <div>
                     <label for="{{ field.id_for_label }}" class="block text-gray-700 font-medium mb-1">
@@ -21,12 +18,18 @@
                     {% endfor %}
                 </div>
             {% endfor %}
-            
-            <button type="submit" 
-                    class="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors">
-                Log In
-            </button>
+            <div class="flex space-x-1">
+                <button type="submit"
+                        class="flex w-20 h-10 bg-blue-500 rounded-full text-white items-center justify-center">
+                    Save
+                </button>
+                <a class="flex w-20 h-10 border border gray-900 rounded-full font-medium items-center justify-center" href="{% url 'account_logout' %}">
+                    Sign out
+                </a>
+            </div>
         </form>
     </div>
 </div>
 {% endblock %}
+
+<!-- w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors -->

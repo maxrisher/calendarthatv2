@@ -12,13 +12,14 @@ from event_creator.new_event import EventBuilder
 
 logger = logging.getLogger(__name__)
 
-def home(request):
+async def home(request):
     """
     [INTERFACE] Renders the web application's home page
     [IN] HTTP request
     [OUT] Rendered home page template
     """
-    return render(request, 'web_interface/home.html')
+    user = await request.auser()
+    return render(request, 'web_interface/home.html', {'user': user})
 
 async def create_event_web(request):
     """
