@@ -164,7 +164,7 @@ CSRF_TRUSTED_ORIGINS = [
     "https://calendarthatv2-production.up.railway.app", 
     "https://calendarthatv2-staging.up.railway.app", 
     f"https://{os.getenv('RAILWAY_PUBLIC_DOMAIN')}",
-    f'chrome-extension://{os.getenv('CHROME_EXTENSION_ID')}'
+    f"chrome-extension://{os.getenv('CHROME_EXTENSION_ID')}"
     ]
 
 LOGGING = {
@@ -210,7 +210,7 @@ LOGGING = {
 CALENDARTHAT_EVENT_EMAIL_SENDER_ADDRESS = "new@calendarthat.com"
 
 CORS_ALLOWED_ORIGINS = [
-    f'chrome-extension://{os.getenv('CHROME_EXTENSION_ID')}'
+    f"chrome-extension://{os.getenv('CHROME_EXTENSION_ID')}"
 ]
 
 # Since you're sending credentials, you also need:
