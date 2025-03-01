@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     "corsheaders",
     "anymail",
     "widget_tweaks",
+    "storages",
 
     #local
     "accounts",
@@ -145,6 +146,22 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+"""
+AWS S3 Configuration
+"""
+
+AWS_ACCESS_KEY_ID = os.getenv('AWS_S3_STATIC_FILES_ACCESS_KEY_ID')
+AWS_SECRET_ACCESS_KEY = os.getenv('AWS_S3_STATIC_FILES_SECRET_ACCESS_KEY')
+AWS_STORAGE_BUCKET_NAME = 'calendarthat-v2-staticfiles'
+AWS_S3_REGION_NAME = 'us-east-2'  # e.g., us-east-1
+AWS_S3_FILE_OVERWRITE = True
+
+USE_S3 = os.getenv('USE_S3', 'False').lower() == 'true'
+
+if USE_S3:
+    STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+    STATIC_URL = f'https://{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
