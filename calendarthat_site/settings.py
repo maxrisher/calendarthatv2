@@ -25,7 +25,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DJANGO_DEBUG', 'False').lower() == 'true'
 
 ALLOWED_HOSTS = [
     'calendarthat.com',
@@ -164,7 +164,7 @@ CSRF_TRUSTED_ORIGINS = [
     "https://calendarthatv2-production.up.railway.app", 
     "https://calendarthatv2-staging.up.railway.app", 
     f"https://{os.getenv('RAILWAY_PUBLIC_DOMAIN')}",
-    f'chrome-extension://{os.getenv('CHROME_EXTENSION_ID')}'
+    f"chrome-extension://{os.getenv('CHROME_EXTENSION_ID')}"
     ]
 
 LOGGING = {
@@ -210,7 +210,7 @@ LOGGING = {
 CALENDARTHAT_EVENT_EMAIL_SENDER_ADDRESS = "new@calendarthat.com"
 
 CORS_ALLOWED_ORIGINS = [
-    f'chrome-extension://{os.getenv('CHROME_EXTENSION_ID')}'
+    f"chrome-extension://{os.getenv('CHROME_EXTENSION_ID')}"
 ]
 
 # Since you're sending credentials, you also need:
