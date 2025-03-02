@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     "corsheaders",
     "anymail",
     "widget_tweaks",
+    "storages",
 
     #local
     "accounts",
@@ -143,8 +144,40 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
-STATIC_URL = '/static/'
+STATIC_URL = 'static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+"""
+AWS S3 Configuration
+"""
+USE_S3 = os.getenv('USE_S3', 'False').lower() == 'true'
+
+if USE_S3:
+    STORAGES = {
+        "default": {
+            "BACKEND": "storages.backends.s3.S3Storage",
+            "OPTIONS": {
+                "bucket_name": 'calendarthat-v2-staticfiles',
+                "access_key": os.getenv('AWS_S3_STATIC_FILES_ACCESS_KEY_ID'),
+                "secret_key": os.getenv('AWS_S3_STATIC_FILES_SECRET_ACCESS_KEY'),
+                "region_name": 'us-east-2',
+                "location": "media",  # folder prefix in bucket
+            },
+        },
+        # For static files (if you want them on S3 too)
+        "staticfiles": {
+            "BACKEND": "storages.backends.s3.S3Storage",
+            "OPTIONS": {
+                "bucket_name": 'calendarthat-v2-staticfiles',
+                "access_key": os.getenv('AWS_S3_STATIC_FILES_ACCESS_KEY_ID'),
+                "secret_key": os.getenv('AWS_S3_STATIC_FILES_SECRET_ACCESS_KEY'),
+                "region_name": 'us-east-2',
+                "location": "static",  # folder prefix in bucket
+                "gzip": True,
+                "gzip_content_types": ("text/css", "text/javascript", "application/javascript"),
+            },
+        },
+    }
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
