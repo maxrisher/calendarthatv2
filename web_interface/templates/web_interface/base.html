@@ -14,10 +14,14 @@
 </head>
 <body class="bg-gray-50">
    <nav class="flex justify-between items-center p-4 bg-white shadow-sm">
-       <h1 class="text-2xl font-bold">
+    <!-- mobile -->
+       <!-- <img src="{% static 'web_interface/images/CalendarThatLogoSmallMar1.svg' %}" class="w-16 block sm:hidden" href="{% url 'home' %}" alt="CalendarThat"> -->
+       <h1 class="text-xl font-bold block sm:hidden">
         <a href="{% url 'home' %}">CalendarThat</a>
        </h1>
-       <img src="{% static 'web_interface/images/CalendarThatLogoFeb17.svg' %}">
+       <!-- web -->
+       <img src="{% static 'web_interface/images/CalendarThatLogoFeb17.svg' %}" class="w-40 hidden sm:block" href="{% url 'home' %}" alt="CalendarThat">
+
        <div class="space-x-1 flex">
            {% if user.is_authenticated %}
                <a href="{% url 'user_settings' %}" class="w-10 h-10 bg-blue-300 rounded-full flex items-center justify-center text-white">
