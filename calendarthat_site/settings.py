@@ -144,7 +144,7 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
-STATIC_URL = '/static/'
+STATIC_URL = 'static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 """
@@ -178,32 +178,6 @@ if USE_S3:
             },
         },
     }
-
-# AWS_ACCESS_KEY_ID = os.getenv('AWS_S3_STATIC_FILES_ACCESS_KEY_ID')
-# AWS_SECRET_ACCESS_KEY = os.getenv('AWS_S3_STATIC_FILES_SECRET_ACCESS_KEY')
-# AWS_STORAGE_BUCKET_NAME = 'calendarthat-v2-staticfiles'
-# AWS_S3_REGION_NAME = 'us-east-2'  # e.g., us-east-1
-# AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com'
-# AWS_S3_OBJECT_PARAMETERS = {
-#     'CacheControl': 'max-age=86400',  # 1 day
-# }
-# AWS_DEFAULT_ACL = 'public-read'  # Makes files publicly readable
-# AWS_LOCATION = 'static'
-
-# USE_S3 = os.getenv('USE_S3', 'False').lower() == 'true'
-
-# if USE_S3:
-#     print("using s3")
-#     try:
-#         STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-#         STATIC_ROOT = f'https://{AWS_S3_CUSTOM_DOMAIN}/{AWS_LOCATION}/'
-#         print("S3 configuration successful")
-#     except Exception as e:
-#         print(f"Error configuring S3: {e}")
-
-# from django.conf import settings
-# print('static storage:')
-# print(settings.STATICFILES_STORAGE)
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
