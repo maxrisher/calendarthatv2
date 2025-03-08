@@ -45,7 +45,7 @@ class LlmCaller:
             ),
         )
 
-        self._raw_response = llm_response.content[0].text
+        self._raw_response = llm_response.text
 
         logger.debug("LLM API call successful")
 
