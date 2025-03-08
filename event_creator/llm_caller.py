@@ -1,4 +1,5 @@
-from anthropic import AsyncAnthropic
+from google import genai
+from google.genai import types
 import os
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 from datetime import datetime
@@ -17,9 +18,9 @@ class LlmCaller:
     [OUT] self.response (dict) with ICS fields.
     """
     def __init__(self):
-        # [DATA] Client for Claude API calls
-        self.client = AsyncAnthropic(api_key=os.environ.get("PRODUCTION_ANTHROPIC_API_KEY"))
-        # [DATA] Raw XML response from Claude
+        # [DATA] Client for LLM API calls
+        self.client = genai.Client(api_key=os.environ.get("PRODUCTION_GEMENI_API_KEY"))
+        # [DATA] Raw XML response from LLM
         self._raw_response = None
         # [DATA] Parsed event data dictionary
         self.response = {}
@@ -35,23 +36,18 @@ class LlmCaller:
 
         user_prompt = self._create_ics_user_prompt(user_text, user_timezone_name)
 
-        anthropic_response = await self.client.messages.create(
-            model="claude-3-5-sonnet-20241022",
-            max_tokens=8192,
-            temperature=0.1,
-            system=[
-            {
-                "type": "text",
-                "text": system_prompt,
-                "cache_control": {"type": "ephemeral"}
-            }
-            ],
-            messages=[{"role": "user", "content": user_prompt}],
+        llm_response = await self.client.aio.models.generate_content(
+            model='gemini-2.0-flash',
+            contents=user_prompt,
+            config=types.GenerateContentConfig(
+                system_instruction=system_prompt,
+                temperature= 0.1,
+            ),
         )
 
-        self._raw_response = anthropic_response.content[0].text
+        self._raw_response = llm_response.content[0].text
 
-        logger.debug("Claude API call successful")
+        logger.debug("LLM API call successful")
 
         self._clean_response()
 
