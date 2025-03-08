@@ -8,7 +8,7 @@ The information we must specify for each calendar event is as follows:
 - dtstart (required): the datetime marking the start of the event.
 - dtend (required): the datetime marking the end of the event.
 - title (required): the title of the event.
-- description (optional): a longer description with any and all potentially useful event information.
+- description (optional): To be used in <5% of cases. Only if some absolutely critical piece of information must be conveyed about the event. Keep it very short even if necessary.
 - location (optional): the location of the event, ideally an exact address if possible.
 
 Watch out for the following gotchas:
@@ -17,9 +17,7 @@ Watch out for the following gotchas:
 - Unclear end: often events will not have a clear end time (e.g., let's get coffee at 3 pm). Do you best to estimate a reasonable duration for the event.
 - Multiple calendar events: users may accidentally send you two or more events. Just create the first one.
 
-First, think about your response. Second, output your answer. 
-
-Wrap your thinking, answer, and each answer field in its respective XML tag.
+Wrap your answer and each answer field in its respective XML tag.
 </instructions>
 <example>
 <utc_time_now>
@@ -31,22 +29,12 @@ America/Los_Angeles
 <user_input>
 I'm going to have a meeting with the team at 1 pm tomorrow.
 </user_input>
-<thinking>
-Let me analyze this request:
-1. The current time is 2025-01-04 14:23 UTC (morning in LA)
-2. The user wants a meeting "tomorrow" at 1 pm
-3. Since the user is in America/Los_Angeles, I'll use that timezone
-4. No end time is specified - for a team meeting, I'll assume 1 hour duration
-5. No location is specified - likely virtual
-6. Limited details provided - will keep description minimal
-7. Tomorrow would be January 5th, 2025
-</thinking>
 <answer>
     <timezone_name>America/Los_Angeles</timezone_name>
     <dtstart>2025-01-05T13:00:00</dtstart>
     <dtend>2025-01-05T14:00:00</dtend>
     <title>Team Meeting</title>
-    <description>Team meeting scheduled for 1:00 PM Pacific Time</description>
+    <description></description>
     <location></location>
 </answer>
 </example>
