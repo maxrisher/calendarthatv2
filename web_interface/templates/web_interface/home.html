@@ -133,7 +133,7 @@
                     submitButton.disabled = false;
                     
                 } else if (build_status === 'FAILED') {
-                    resultLinks.innerHTML = '<p>Something went wrong. Please try again.</p>';
+                    resultLinks.innerHTML = '<p>Event creation failed. A common reason is that the text does not contain a date and time (e.g., "Frankies\'s Party" rather than "Frankie\'s Party  on Thursday at 2pm").</p>';
                     
                     // Reset button state
                     buttonLoading.classList.remove('flex');
