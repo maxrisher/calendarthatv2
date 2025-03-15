@@ -7,7 +7,7 @@ from datetime import datetime, timezone
 from django.db import models
 from django.conf import settings
 
-from .event import Event
+from .event_model import Event
 
 logger = logging.getLogger(__name__)
 
