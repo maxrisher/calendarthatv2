@@ -1,5 +1,5 @@
 1. **Product Overview**  
-   - **Product name and version**: CalendarThat Email v1
+   - **Product name and version**: CalendarThat Email v2
    - **Executive summary/purpose**: CalendarThat Email allows users to send any arbitrary text to an email address (new@calendarthat.com) and receive a reply with an .ics file, a gcal link, and an outlook link. The primary purpose of this service is to allow for the creation of calendar events from within an email client (a location where many people receive event-like invitations). The secondary purpose is to allow for creation of calendar events on both mobile and desktop devices (because both have email clients).
 
 2. **Problem Statement**  
