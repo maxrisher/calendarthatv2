@@ -65,7 +65,10 @@ class EventBuilder(models.Model):
     # [DATA] Original text input from user
     user_input_text = models.TextField()
     
-    llm_raw_response = models.TextField()
+    llm_raw_response = models.TextField(
+        null=True,
+        blank=True
+    )
     
     class Meta:
         ordering = ["-build_start"]
@@ -78,6 +81,7 @@ class EventBuilder(models.Model):
         
             llm_caller = LlmCaller()
             await llm_caller.text_to_ics(self.user_input_text, user_timezone_name)
+            self.llm_raw_response = llm_caller._raw_response
             
             events_to_create = []
             
