@@ -71,3 +71,5 @@ authentication setup with this tutorial: https://learndjango.com/tutorials/djang
 # Helpful reading
 async django: https://jonathanadly.com/is-async-django-ready-for-prime-time
 gemeni json mode: https://cloud.google.com/vertex-ai/generative-ai/docs/multimodal/control-generated-output
+gemeni json schema: https://ai.google.dev/api/caching#Schema
+gemeni json spec: https://ai.google.dev/gemini-api/docs/structured-output?lang=python

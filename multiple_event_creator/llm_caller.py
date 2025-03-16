@@ -10,53 +10,9 @@ import json
 
 from django.utils import timezone
 
-logger = logging.getLogger(__name__)
+from event_schema import SHORT_LLM_EVENT_OUTPUT_SCHEMA
 
-llm_event_output_schema = {
-    "type": "array",
-    "items": {
-        "type": "object",
-        "required": [
-            "dtstart",
-            "dtend",
-            "title"
-        ],
-        "properties": {
-            "time_zone_name": {
-                "type": "string",
-                "description": "The IANA time zone name to be applied to dtend and dtstart. If this value is provided, dtstart and dtend will be made aware with this time zone. Otherwise, they will default to the time zone on the user's computer."
-            },
-            "end_time_zone_name": {
-                "type": "string",
-                "description": "The IANA time zone name to be applied to dtend. (Overrides time_zone_name for dtend)"
-            },
-            "rrule": {
-                "type": "string",
-                "description": "Recurrence rule in RFC 5545 iCalendar format specifying frequency (DAILY/WEEKLY/MONTHLY/YEARLY), day patterns, intervals, count limits, and end dates. Examples: 'FREQ=WEEKLY;BYDAY=MO,WE,FR' or 'FREQ=MONTHLY;BYMONTHDAY=15;COUNT=12'."
-            },
-            "dtstart": {
-                "type": "string",
-                "description": "The datetime marking the start of the event (ISO 8601 format). Or the date marking the start of a full-day event (YYYY-MM-DD)."
-            },
-            "dtend": {
-                "type": "string",
-                "description": "The datetime marking the end of the event (ISO 8601 format). Or the date marking the end of a full-day event (YYYY-MM-DD)."
-            },
-            "title": {
-                "type": "string",
-                "description": "The title of the event."
-            },
-            "description": {
-                "type": "string",
-                "description": "A brief, essential description of the event. Should only be used when absolutely necessary (<5% of cases)."
-            },
-            "location": {
-                "type": "string",
-                "description": "The location of the event, preferably an exact address."
-            }
-        }
-    }
-} 
+logger = logging.getLogger(__name__)
 
 class LlmCaller:
     """
@@ -90,7 +46,7 @@ class LlmCaller:
                 system_instruction=system_prompt,
                 temperature= 0,
                 response_mime_type= 'application/json',
-                response_schema= llm_event_output_schema
+                response_schema= SHORT_LLM_EVENT_OUTPUT_SCHEMA
             ),
         )
         
@@ -113,7 +69,8 @@ class LlmCaller:
         with open('multiple_event_creator/00_user_text_to_multi_ics_v1.txt', 'r') as file:
             blank_user_prompt = file.read()
 
-        utc_time =  "2025-03-15T14:30" #NB: this is just to the minutes level of precision #timezone.now().strftime('%Y-%m-%dT%H:%M') or
+        #TODO: change this to actual code
+        utc_time =  "2025-03-15T14:30" #NB: this is just to the minutes level of precision #timezone.now().strftime('%Y-%m-%dT%H:%M')
 
         user_prompt = blank_user_prompt.format(
             utc_time,
@@ -125,7 +82,7 @@ class LlmCaller:
 
     
 
-llm_caller = LlmCaller()
-import asyncio
-asyncio.run(llm_caller.text_to_ics(""))
-print(llm_caller.response)
+# llm_caller = LlmCaller()
+# import asyncio
+# asyncio.run(llm_caller.text_to_ics(""))
+# print(llm_caller.response)
