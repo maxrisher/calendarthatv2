@@ -72,27 +72,3 @@ class EventBuilder(models.Model):
         self.build_time = datetime.now(timezone.utc) - self.build_start
         self.build_status = "DONE"
     
-    async def _llm_create_events(self, user_input_text, user_timezone_name):
-        client = genai.Client(api_key=os.environ.get("PRODUCTION_GEMENI_API_KEY"))
-        system_prompt = ""
-        user_prompt = ""
-        
-        self.llm_raw_response = await self.client.aio.models.generate_content(
-            model='gemini-2.0-flash',
-            contents=user_prompt,
-            config=types.GenerateContentConfig(
-                system_instruction=system_prompt,
-                temperature= 0.1,
-            ),
-        )
-        
-        events = self._llm_response_to_events(self.llm_raw_response)
-        
-        await Event.objects.abulk_create(events)
-    
-    def _create_llm_user_prompt():
-        pass
-    
-    def _llm_response_to_events(llm_raw_response):
-        events = llm_raw_response
-        return events

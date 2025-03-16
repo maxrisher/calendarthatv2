@@ -1,0 +1,9 @@
+<UTC_NOW>
+{}
+</UTC_NOW>
+<USER_TIME_ZONE>
+{}
+</USER_TIME_ZONE>
+<USER_TEXT>
+{}
+</USER_TEXT>
