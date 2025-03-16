@@ -1,3 +1,6 @@
 from django.contrib import admin
 
-# Register your models here.
+from .event_builder_model import EventBuilder
+from .event_model import Event
+
+admin.site.register(EventBuilder, Event)
