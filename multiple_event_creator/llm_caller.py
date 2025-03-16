@@ -10,7 +10,7 @@ import json
 
 from django.utils import timezone
 
-from event_schema import SHORT_LLM_EVENT_OUTPUT_SCHEMA
+from .event_schema import SHORT_LLM_EVENT_OUTPUT_SCHEMA
 
 logger = logging.getLogger(__name__)
 
