@@ -5,7 +5,7 @@ LLM_EVENT_OUTPUT_SCHEMA = {
         "required": [
             "dtstart",
             "dtend",
-            "title"
+            "summary"
         ],
         "properties": {
             "time_zone_name": {
@@ -28,7 +28,7 @@ LLM_EVENT_OUTPUT_SCHEMA = {
                 "type": "string",
                 "description": "The datetime marking the end of the event (ISO 8601 format). Or the date marking the end of a full-day event (YYYY-MM-DD)."
             },
-            "title": {
+            "summary": {
                 "type": "string",
                 "description": "The title of the event."
             },
@@ -41,7 +41,7 @@ LLM_EVENT_OUTPUT_SCHEMA = {
                 "description": "The location of the event, preferably an exact address."
             }
         },
-        "propertyOrdering": ["time_zone_name", "end_time_zone_name", "rrule", "dtstart", "dtend", "title", "description", "location"]
+        "propertyOrdering": ["time_zone_name", "end_time_zone_name", "rrule", "dtstart", "dtend", "summary", "description", "location"]
     }
 } 
 
@@ -52,7 +52,7 @@ SHORT_LLM_EVENT_OUTPUT_SCHEMA = {
         "required": [
             "dtstart",
             "dtend",
-            "title"
+            "summary"
         ],
         "properties": {
             "time_zone_name": {
@@ -70,7 +70,7 @@ SHORT_LLM_EVENT_OUTPUT_SCHEMA = {
             "dtend": {
                 "type": "string"
             },
-            "title": {
+            "summary": {
                 "type": "string"
             },
             "description": {
@@ -80,6 +80,6 @@ SHORT_LLM_EVENT_OUTPUT_SCHEMA = {
                 "type": "string"
             }
         },
-        "propertyOrdering": ["time_zone_name", "end_time_zone_name", "rrule", "dtstart", "dtend", "title", "description", "location"]
+        "propertyOrdering": ["time_zone_name", "end_time_zone_name", "rrule", "dtstart", "dtend", "summary", "description", "location"]
     }
 } 

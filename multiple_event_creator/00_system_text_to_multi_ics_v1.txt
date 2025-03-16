@@ -15,7 +15,7 @@ Your response should follow this JSON schema:
         "required": [
             "dtstart",
             "dtend",
-            "title"
+            "summary"
         ],
         "properties": {
             "time_zone_name": {
@@ -38,7 +38,7 @@ Your response should follow this JSON schema:
                 "type": "string",
                 "description": "The datetime marking the end of the event (ISO 8601 format). Or the date marking the end of a full-day event (YYYY-MM-DD)."
             },
-            "title": {
+            "summary": {
                 "type": "string",
                 "description": "The title of the event."
             },
@@ -118,7 +118,7 @@ NEW ARRIVAL TIME
   {
     "dtstart": "2025-05-26T08:55:00",
     "dtend": "2025-05-26T11:55:00",
-    "title": "Flight TK1022 Sarajevo (SJJ) to Istanbul (IST)",
+    "summary": "Flight TK1022 Sarajevo (SJJ) to Istanbul (IST)",
     "description": "Flight change: Departure from Sarajevo at 08:55, arrival in Istanbul at 11:55.",
     "time_zone_name": "Europe/Sarajevo",
     "end_time_zone_name": "Europe/Istanbul"
@@ -139,7 +139,7 @@ My birthday is on the 22nd
   {
     "dtstart": "2025-3-22",
     "dtend": "2025-3-23",
-    "title": "Birthday",
+    "summary": "Birthday",
     "rrule": "FREQ=YEARLY"
   }
 ]
