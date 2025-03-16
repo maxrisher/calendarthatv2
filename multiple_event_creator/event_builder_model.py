@@ -3,7 +3,7 @@ import logging
 from google import genai
 from google.genai import types
 from datetime import datetime, timezone
-from zoneinfo import ZoneInfo
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from django.db import models
 from django.conf import settings
@@ -92,37 +92,57 @@ class EventBuilder(models.Model):
             self.build_status = "DONE"
             await self.asave()
         
+        except ZoneInfoNotFoundError:
+            self.build_fail_reason = "Invalid timezone."
+            raise
         except Exception as e:
             self.build_status = "FAILED"
+            self.build_fail_reason = "Unknown error."
+
     
     def _event_dict_to_django(self, event_dict):
         now = datetime.now(timezone.utc)
-        
+
         dtstart = event_dict.get('dtstart')
         dtend = event_dict.get('dtend')
-        
         time_zone_name = event_dict.get('time_zone_name')
         end_time_zone_name = event_dict.get('end_time_zone_name')
+
+        event_data = {
+            'builder': self,
+            'custom_user': self.custom_user,
+            'built_at': now,
+            'summary': event_dict.get('summary', 'Untitled Event'),
+            'location': event_dict.get('location', None),
+            'description': event_dict.get('description', None),
+            'recurrence_rules': event_dict.get('rrule', None),
+            
+            'start_date': None,
+            'end_date': None,
+            'start_dttm_naive': None,
+            'end_dttm_naive': None,
+            'start_dttm_aware': None,
+            'end_dttm_aware': None,
+        }
+
+        # full-day events
+        if len(dtstart) <= 10:  # YYYY-MM-DD format
+            event_data['start_date'] = datetime.fromisoformat(dtstart).date()
+            event_data['end_date'] = datetime.fromisoformat(dtend).date()
+            
+        # non-full day events
+        else:
+            event_data['start_dttm_naive'] = datetime.fromisoformat(dtstart) 
+            event_data['end_dttm_naive'] = datetime.fromisoformat(dtend)  
+                    
+            # handle timezone-aware events
+            if time_zone_name:
+                event_data['start_dttm_aware'] = datetime.fromisoformat(dtstart).replace(tzinfo=ZoneInfo(time_zone_name))
+                event_data['end_dttm_aware'] = datetime.fromisoformat(dtend).replace(tzinfo=ZoneInfo(time_zone_name))
+
+            # handle events with a different timezone for the end of the event
+            if end_time_zone_name:
+                event_data['end_dttm_aware'] = datetime.fromisoformat(dtend).replace(tzinfo=ZoneInfo(end_time_zone_name))
         
-        if time_zone_name:
-            start_aware = datetime.fromisoformat(dtstart).replace(tzinfo=ZoneInfo(time_zone_name))
-        
-        
-        django_event = Event(builder=self,
-                             custom_user=self.custom_user,
-                             built_at=now,
-                             title=event_dict.get('title', 'Untitled Event'),
-                             location=event_dict.get('location', ''),
-                             start_naive = datetime.fromisoformat(dtstart),
-                             end_naive = datetime.fromisoformat(dtend),
-                             description=event_dict.get('description', ''),
-                             recurrence_rules = event_dict.get('rrule', ''))
-        
+        django_event = Event(**event_data)
         return django_event
-    
-    
-    
-                try:
-                return datetime.fromisoformat(date_str).replace(tzinfo=ZoneInfo(timezone_name))
-            except (ValueError, TypeError, ZoneInfoNotFoundError):
-                return None
