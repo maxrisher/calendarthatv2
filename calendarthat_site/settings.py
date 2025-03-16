@@ -60,6 +60,7 @@ INSTALLED_APPS = [
     "event_creator",
     "web_interface",
     "email_interface",
+    "multiple_event_creator",
 ]
 
 MIDDLEWARE = [
