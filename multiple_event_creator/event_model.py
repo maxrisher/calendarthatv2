@@ -16,7 +16,7 @@ class Event(models.Model):
                                     on_delete=models.CASCADE,
                                     null=True, 
                                     blank=True, 
-                                    related_name="created_events")    
+                                    related_name="multi_events")    
     
     # [DATA] Reference to the builder that created this event
     builder = models.ForeignKey('EventBuilder', on_delete=models.CASCADE, related_name="events")
