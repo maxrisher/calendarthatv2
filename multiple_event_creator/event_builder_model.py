@@ -98,7 +98,6 @@ class EventBuilder(models.Model):
         except Exception as e:
             self.build_status = "FAILED"
             self.build_fail_reason = "Unknown error."
-
     
     def _event_dict_to_django(self, event_dict):
         now = datetime.now(timezone.utc)
