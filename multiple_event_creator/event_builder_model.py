@@ -9,7 +9,7 @@ from django.db import models
 from django.conf import settings
 
 from .event_model import Event
-from llm_caller import LlmCaller
+from .llm_caller import LlmCaller
 
 logger = logging.getLogger(__name__)
 
