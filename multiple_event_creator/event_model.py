@@ -1,6 +1,11 @@
 import uuid
+from urllib.parse import quote
+from icalendar import vRecur, Calendar, Event as ICalEvent
+from datetime import datetime
+
 from django.db import models
 from django.conf import settings
+from django.core.exceptions import ValidationError
 
 class Event(models.Model):
     # [DATA] Unique identifier for the event
@@ -22,11 +27,33 @@ class Event(models.Model):
     # [DATA] Event summary
     summary = models.CharField(max_length=255)
     
-    # [DATA] Start and end dates/times (with and without timezone)
-    start_naive = models.DateTimeField()
-    end_naive = models.DateTimeField(null=True, blank=True)
-    start_aware = models.DateTimeField(null=True, blank=True)
-    end_aware = models.DateTimeField(null=True, blank=True)
+    # [DATA] Start and end date/datetimes (with and without timezone)
+    start_dttm_aware = models.DateTimeField(
+        null=True,
+        blank=True,
+    )    
+    start_dttm_naive = models.CharField( # String in ISO 8601 format, e.g. "2025-03-16T13:30"
+        max_length=25,
+        null=True,
+        blank=True,
+        )
+    start_date = models.DateField(
+        null=True,
+        blank=True,
+    )
+    end_dttm_aware = models.DateTimeField(
+        null=True,
+        blank=True,
+    )
+    end_dttm_naive = models.CharField( # String in ISO 8601 format, e.g. "2025-03-16T14:30"
+        max_length=25,
+        null=True,
+        blank=True,
+        )
+    end_date = models.DateField(
+        null=True,
+        blank=True,
+    )
     
     # [DATA] Event details
     location = models.CharField(max_length=255, blank=True)
@@ -38,6 +65,17 @@ class Event(models.Model):
     outlook_link = models.TextField(blank=True)
     ics_data = models.TextField(blank=True)
     
+    @property
+    def has_dates(self):
+        return self.start_date and self.end_date
+    
+    @property
+    def has_naive_dttms(self):
+        return self.start_dttm_naive and self.end_dttm_naive
+    
+    @property
+    def has_aware_dttms(self):
+        return self.start_dttm_aware and self.end_dttm_aware
     class Meta:
         ordering = ["-built_at"]
         verbose_name = "Event"
@@ -45,6 +83,21 @@ class Event(models.Model):
         
     def __str__(self):
         return self.summary
+    
+    def clean(self):
+        super().clean()
+        
+        # 1. Validate that date fields don't coexist with datetime fields
+        if self.has_dates and (self.has_naive_dttms or self.has_aware_dttms):
+            raise ValidationError("Date fields cannot coexist with datetime fields. ")
+        
+        # 2. Validate that at least one pair of date/time representation exists
+        if not (self.has_dates or self.has_naive_dttms or self.has_aware_dttms):
+            raise ValidationError("At least one pair of start/end time representation must be present.")
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)
         
     def generate_calendar_resources(self):
         """
@@ -56,108 +109,123 @@ class Event(models.Model):
         self.outlook_link = self._generate_outlook_link()
         self.ics_data = self._generate_ics_data()
     
-    #TODO: check these methods and update them    
     def _generate_gcal_link(self):
-        """
-        [INTERFACE] Generate Google Calendar link
-        [INPUTS] Event details (self)
-        [OUTPUTS] URL string for Google Calendar
-        """
-        # Implementation here
-        from urllib.parse import quote
+        url_dtstart = ""
+        url_dtend = ""
         
-        # Format: https://calendar.google.com/calendar/render?action=TEMPLATE&text=summary&dates=YYYYMMDDTHHmmssZ/YYYYMMDDTHHmmssZ
-        dates_format = "%Y%m%dT%H%M%SZ"
+        if self.has_dates:
+            # Format dates as YYYYMMDD for all-day events
+            url_dtstart = self.start_date.strftime("%Y%m%d")
+            url_dtend = self.end_date.strftime("%Y%m%d")
         
-        # Use aware datetimes if available, otherwise naive
-        start = self.start_aware or self.start_naive
-        end = self.end_aware or self.end_naive or start
+        elif self.has_aware_dttms:
+            # Format timezone-aware datetimes as YYYYMMDDTHHmmssZ
+            url_dtstart = self.start_dttm_aware.strftime("%Y%m%dT%H%M%SZ")
+            url_dtend = self.end_dttm_aware.strftime("%Y%m%dT%H%M%SZ")
         
-        # Format start and end dates in the required format
-        start_str = start.strftime(dates_format)
-        end_str = end.strftime(dates_format)
+        elif self.has_naive_dttms:
+            # Use the naive datetime strings, which should already be in the correct format
+            url_dtstart = iso_8601_to_ics_dttm(self.start_dttm_naive)
+            url_dtend = iso_8601_to_ics_dttm(self.end_dttm_naive)
         
-        # Build the URL with parameters
-        url = (
-            f"https://calendar.google.com/calendar/render"
-            f"?action=TEMPLATE"
+        else:
+            raise ValueError("Event must have either dates or datetimes to generate calendar links")
+        
+        gcal_url = (
+            f"https://calendar.google.com/calendar/render?action=TEMPLATE"
             f"&text={quote(self.summary)}"
-            f"&dates={start_str}/{end_str}"
+            f"&dates={url_dtstart}/{url_dtend}"
         )
         
-        # Add optional parameters if they exist
         if self.description:
-            url += f"&details={quote(self.description)}"
+            gcal_url += f"&details={quote(self.description)}"
+            
         if self.location:
-            url += f"&location={quote(self.location)}"
+            gcal_url += f"&location={quote(self.location)}"
+                                
+        if self.recurrence_rules:
+            gcal_url += f"&recur=RRULE:{quote(self.recurrence_rules)}"
         
-        return url
+        gcal_url += f"&sf=true&output=xml"
+        
+        return gcal_url
         
     def _generate_outlook_link(self):
-        """
-        [INTERFACE] Generate Outlook Calendar link
-        [INPUTS] Event details (self)
-        [OUTPUTS] URL string for Outlook Calendar
-        """
-        from urllib.parse import quote
+        if self.has_dates:
+            start_str = self.start_date.strftime("%Y-%m-%d")
+            end_str = self.end_date.strftime("%Y-%m-%d")
         
-        # Use aware datetimes if available, otherwise naive
-        start = self.start_aware or self.start_naive
-        end = self.end_aware or self.end_naive or start
+        elif self.has_aware_dttms:
+            start_str = self.start_dttm_aware.strftime("%Y-%m-%dT%H:%M:%SZ")
+            end_str = self.end_dttm_aware.strftime("%Y-%m-%dT%H:%M:%SZ")
         
-        # Format dates in ISO format
-        start_str = start.isoformat()
-        end_str = end.isoformat()
+        elif self.has_naive_dttms:
+            start_str = self.start_dttm_naive
+            end_str = self.end_dttm_naive
+
+        else:
+            raise ValueError("Event must have either dates or datetimes to generate calendar links")
         
-        # Build the URL with parameters
-        url = (
-            f"https://outlook.live.com/calendar/0/deeplink/compose"
-            f"?subject={quote(self.summary)}"
-            f"&startdt={quote(start_str)}"
-            f"&enddt={quote(end_str)}"
-        )
+        outlook_url = (
+            f"https://outlook.live.com/calendar/0/deeplink/compose?path=/calendar/action/compose&rru=addevent"
+            f"&subject={quote(self.summary)}"
+            f"&startdt={start_str}&enddt={end_str}"
+            ) 
         
-        # Add optional parameters if they exist
+        if self.has_dates:
+            outlook_url += "&allday=true"
+        
         if self.description:
-            url += f"&body={quote(self.description)}"
-        if self.location:
-            url += f"&location={quote(self.location)}"
+            outlook_url += f"&body={quote(self.description)}"
         
-        return url
+        if self.location:
+            outlook_url += f"&location={quote(self.location)}"
+        
+        # Note: Outlook web doesn't support recurrence rules in the URL parameters
+        
+        return outlook_url
         
     def _generate_ics_data(self):
-        """
-        [INTERFACE] Generate iCalendar data
-        [INPUTS] Event details (self)
-        [OUTPUTS] ICS format string
-        """
-        import icalendar
-        
-        cal = icalendar.Calendar()
-        cal.add('prodid', '-//Your Company//Event Calendar//EN')
+        cal = Calendar()
+        cal.add('prodid', '-//CalendarThat//calendarthat.com//')
         cal.add('version', '2.0')
         
-        event = icalendar.Event()
+        event = ICalEvent()
         event.add('summary', self.summary)
+        event.add('uid', str(self.uuid))
         
-        # Use aware datetimes if available, otherwise naive
-        start = self.start_aware or self.start_naive
-        end = self.end_aware or self.end_naive or start
+        event.add('dtstamp', self.built_at)
         
-        event.add('dtstart', start)
-        event.add('dtend', end)
+        # Handle different date/time formats
+        if self.has_dates:
+            # All-day event
+            event.add('dtstart', self.start_date)
+            event.add('dtend', self.end_date)
         
-        if self.location:
-            event.add('location', self.location)
+        elif self.has_aware_dttms:
+            # Timezone-aware datetime
+            event.add('dtstart', self.start_dttm_aware)
+            event.add('dtend', self.end_dttm_aware)
+        
+        elif self.has_naive_dttms:
+            start_dt = datetime.fromisoformat(self.start_dttm_naive)
+            end_dt = datetime.fromisoformat(self.end_dttm_naive)
+            event.add('dtstart', start_dt)
+            event.add('dtend', end_dt)
+        
         if self.description:
             event.add('description', self.description)
         
-        # Add UID for the event
-        event.add('uid', str(self.uuid))
+        if self.location:
+            event.add('location', self.location)
         
-        # Add recurrence rule if it exists
         if self.recurrence_rules:
-            event.add('rrule', self.recurrence_rules)
+            event.add('rrule', vRecur.from_ical(self.recurrence_rules))
         
         cal.add_component(event)
+        
         return cal.to_ical().decode('utf-8')
+    
+def iso_8601_to_ics_dttm(iso_str: str) -> str:
+    dt = datetime.fromisoformat(iso_str)
+    return dt.strftime("%Y%m%dT%H%M%S")

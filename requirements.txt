@@ -23,6 +23,7 @@ google-genai==1.5.0
 h11==0.14.0
 httpcore==1.0.7
 httpx==0.28.1
+icalendar==6.1.1
 ics==0.7.2
 idna==3.10
 jiter==0.8.2
@@ -47,6 +48,7 @@ starkbank-ecdsa==2.2.0
 TatSu==5.13.1
 types-python-dateutil==2.9.0.20241206
 typing_extensions==4.12.2
+tzdata==2025.1
 urllib3==2.3.0
 uvicorn==0.34.0
 websockets==14.2
