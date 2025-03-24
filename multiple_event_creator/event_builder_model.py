@@ -27,7 +27,7 @@ class EventBuilder(models.Model):
         on_delete=models.CASCADE,
         null=True,
         blank=True,
-        related_name="events",
+        related_name="event_builders",
     )    
     
     # [DATA] Processing status constants

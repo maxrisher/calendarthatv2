@@ -19,7 +19,7 @@ class Event(models.Model):
                                     related_name="created_events")    
     
     # [DATA] Reference to the builder that created this event
-    builder = models.ForeignKey('EventBuilder', on_delete=models.CASCADE, related_name="events")
+    builder = models.ForeignKey('EventBuilder', on_delete=models.CASCADE, related_name="multiple_events")
     
     # [DATA] When this event was built/created
     built_at = models.DateTimeField()
