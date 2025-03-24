@@ -56,14 +56,14 @@ class Event(models.Model):
     )
     
     # [DATA] Event details
-    location = models.CharField(max_length=255, blank=True)
-    description = models.TextField(blank=True)
-    recurrence_rules = models.CharField(max_length=255, blank=True)
+    location = models.CharField(max_length=255, blank=True, null=True)
+    description = models.TextField(blank=True, null=True)
+    recurrence_rules = models.CharField(max_length=255, blank=True, null=True)
     
     # [DATA] Precomputed calendar links and data
-    gcal_link = models.TextField(blank=True)
-    outlook_link = models.TextField(blank=True)
-    ics_data = models.TextField(blank=True)
+    gcal_link = models.TextField(blank=True, null=True)
+    outlook_link = models.TextField(blank=True, null=True)
+    ics_data = models.TextField(blank=True, null=True)
     
     @property
     def has_dates(self):
