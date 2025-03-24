@@ -109,7 +109,7 @@ class EventBuilder(models.Model):
             
             error_msg = str(validation_error)
             
-            if "maximum" in error_msg and "items" in error_msg:
+            if "too long" in error_msg and "maxItems" in error_msg:
                 self.build_fail_reason = "Too many events detected. Please limit your request to 10 or fewer events."
             else:
                 self.build_fail_reason = f"Invalid event format. Please rephrase your request."
