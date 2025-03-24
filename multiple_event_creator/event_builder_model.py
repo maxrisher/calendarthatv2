@@ -140,8 +140,8 @@ class EventBuilder(models.Model):
             
         # non-full day events
         else:
-            event_data['start_dttm_naive'] = datetime.fromisoformat(dtstart) 
-            event_data['end_dttm_naive'] = datetime.fromisoformat(dtend)  
+            event_data['start_dttm_naive'] = dtstart
+            event_data['end_dttm_naive'] = dtend
                     
             # handle timezone-aware events
             if time_zone_name:

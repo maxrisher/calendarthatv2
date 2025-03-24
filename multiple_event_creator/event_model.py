@@ -124,13 +124,9 @@ class Event(models.Model):
             url_dtend = self.end_dttm_aware.strftime("%Y%m%dT%H%M%SZ")
         
         elif self.has_naive_dttms:
-            # Handle both string and datetime objects for naive datetimes
-            if isinstance(self.start_dttm_naive, str):
-                url_dtstart = iso_8601_to_ics_dttm(self.start_dttm_naive)
-                url_dtend = iso_8601_to_ics_dttm(self.end_dttm_naive)
-            else:
-                url_dtstart = self.start_dttm_naive.strftime("%Y%m%dT%H%M%S")
-                url_dtend = self.end_dttm_naive.strftime("%Y%m%dT%H%M%S")
+            # Use the naive datetime strings, which should already be in the correct format
+            url_dtstart = iso_8601_to_ics_dttm(self.start_dttm_naive)
+            url_dtend = iso_8601_to_ics_dttm(self.end_dttm_naive)
         
         else:
             raise ValueError("Event must have either dates or datetimes to generate calendar links")
