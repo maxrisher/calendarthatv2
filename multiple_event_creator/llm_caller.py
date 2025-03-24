@@ -13,9 +13,7 @@ logger = logging.getLogger(__name__)
 
 class LlmCaller:
     """
-    [INTERFACE] 
-    [IN] 
-    [OUT] 
+    [INTERFACE] An object handling all communication with LLM providers, equiped with a library of prompts and methods to use them
     """
     def __init__(self):
         # [DATA] Client for LLM API calls

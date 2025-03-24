@@ -8,6 +8,9 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 
 class Event(models.Model):
+    """
+    [INTERFACE] Stores event data and is able to represent itself in the .ics, gcal link, or outlook link formats
+    """
     # [DATA] Unique identifier for the event
     uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     
@@ -101,7 +104,7 @@ class Event(models.Model):
         
     def generate_calendar_resources(self):
         """
-        [INTERFACE] Generate all calendar resources (links and ICS data)
+        [INTERFACE] Generate all calendar resources (outlook link, gcal link, and ICS data)
         [INPUTS] Event details (self)
         [OUTPUTS] Updates self with generated resources
         """
@@ -226,6 +229,6 @@ class Event(models.Model):
         
         return cal.to_ical().decode('utf-8')
     
-def iso_8601_to_ics_dttm(iso_str: str) -> str:
+def iso_8601_to_ics_dttm(iso_str):
     dt = datetime.fromisoformat(iso_str)
     return dt.strftime("%Y%m%dT%H%M%S")

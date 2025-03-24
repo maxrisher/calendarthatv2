@@ -13,6 +13,9 @@ from .llm_caller import LlmCaller
 logger = logging.getLogger(__name__)
 
 class EventBuilder(models.Model):
+    """
+    [INTERFACE] Does the job of taking user input and building it into one or more events
+    """
     # [DATA] Unique identifier for the event
     uuid = models.UUIDField(
         primary_key=True,
@@ -75,6 +78,11 @@ class EventBuilder(models.Model):
         verbose_name_plural = "EventBuilders"
         
     async def build(self):
+        """
+        [INTERFACE] Converts user text input data into calendar events
+        [IN] An initalized EventBuilder, with user input text
+        [OUT] A completed EventBuilder, either with an error and reason or a set of associated events created
+        """
         try:
             user_timezone_name = self.custom_user.time_zone_name if self.custom_user else None
         
@@ -123,6 +131,11 @@ class EventBuilder(models.Model):
             raise
     
     def _event_dict_to_django(self, event_dict):
+        """
+        [INTERFACE] Takes a single event dictionary and converts it into a django Event model
+        [IN] Event dictionary
+        [OUT] Django Event model
+        """
         now = datetime.now(timezone.utc)
 
         dtstart = event_dict.get('dtstart')

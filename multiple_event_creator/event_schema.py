@@ -1,3 +1,43 @@
+SHORT_LLM_EVENT_OUTPUT_SCHEMA = {
+    "type": "array",
+    "maxItems": 10,
+    "items": {
+        "type": "object",
+        "required": [
+            "dtstart",
+            "dtend",
+            "summary"
+        ],
+        "properties": {
+            "time_zone_name": {
+                "type": "string"
+            },
+            "end_time_zone_name": {
+                "type": "string"
+            },
+            "rrule": {
+                "type": "string"
+            },
+            "dtstart": {
+                "type": "string"
+            },
+            "dtend": {
+                "type": "string"
+            },
+            "summary": {
+                "type": "string"
+            },
+            "description": {
+                "type": "string"
+            },
+            "location": {
+                "type": "string"
+            }
+        },
+        "propertyOrdering": ["time_zone_name", "end_time_zone_name", "rrule", "dtstart", "dtend", "summary", "description", "location"]
+    }
+} 
+
 LLM_EVENT_OUTPUT_SCHEMA = {
     "type": "array",
     "items": {
@@ -39,46 +79,6 @@ LLM_EVENT_OUTPUT_SCHEMA = {
             "location": {
                 "type": "string",
                 "description": "The location of the event, preferably an exact address."
-            }
-        },
-        "propertyOrdering": ["time_zone_name", "end_time_zone_name", "rrule", "dtstart", "dtend", "summary", "description", "location"]
-    }
-} 
-
-SHORT_LLM_EVENT_OUTPUT_SCHEMA = {
-    "type": "array",
-    "maxItems": 10,
-    "items": {
-        "type": "object",
-        "required": [
-            "dtstart",
-            "dtend",
-            "summary"
-        ],
-        "properties": {
-            "time_zone_name": {
-                "type": "string"
-            },
-            "end_time_zone_name": {
-                "type": "string"
-            },
-            "rrule": {
-                "type": "string"
-            },
-            "dtstart": {
-                "type": "string"
-            },
-            "dtend": {
-                "type": "string"
-            },
-            "summary": {
-                "type": "string"
-            },
-            "description": {
-                "type": "string"
-            },
-            "location": {
-                "type": "string"
             }
         },
         "propertyOrdering": ["time_zone_name", "end_time_zone_name", "rrule", "dtstart", "dtend", "summary", "description", "location"]
