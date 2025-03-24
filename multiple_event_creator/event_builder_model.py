@@ -100,8 +100,8 @@ class EventBuilder(models.Model):
         except ZoneInfoNotFoundError:
             self.build_status = "FAILED"
             self.build_fail_reason = "Invalid timezone."
+            logger.error("Event created with invalid timezone.")
             await self.asave()
-            raise
         
         #if the json returned by the llm is bad
         except ValidationError as validation_error:
@@ -116,7 +116,6 @@ class EventBuilder(models.Model):
                 
             logger.error(f"Validation error in LLM response: {error_msg}")
             await self.asave()
-            raise
 
         except Exception as e:
             self.build_status = "FAILED"
