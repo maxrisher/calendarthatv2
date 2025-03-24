@@ -67,9 +67,9 @@ class LlmCaller:
         utc_time = timezone.now().strftime('%Y-%m-%dT%H:%M') #NB: this is just to the minutes level of precision
 
         user_prompt = blank_user_prompt.format(
-            utc_time=utc_time,
-            user_text=user_text,
-            user_timezone_name=user_timezone_name if user_timezone_name is not None else "Not specified"
+            utc_time,
+            user_text,
+            user_timezone_name if user_timezone_name is not None else "Not specified"
             )
 
         return user_prompt
