@@ -96,7 +96,7 @@ async def download_calendar_event(request): #TODO: rename to download events
                 "error": "Event processing failed" #TODO: rename
             }, status=422)
             
-        events = await Event.objects.filter(event_builder=event_builder).to_list()
+        events = await Event.objects.filter(builder=event_builder).to_list()
         
         first_event = events[0]
 
