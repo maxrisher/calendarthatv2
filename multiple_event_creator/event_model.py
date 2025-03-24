@@ -16,7 +16,7 @@ class Event(models.Model):
                                     on_delete=models.CASCADE,
                                     null=True, 
                                     blank=True, 
-                                    related_name="multi_events")    
+                                    related_name="created_events")    
     
     # [DATA] Reference to the builder that created this event
     builder = models.ForeignKey('EventBuilder', on_delete=models.CASCADE, related_name="events")
@@ -124,9 +124,13 @@ class Event(models.Model):
             url_dtend = self.end_dttm_aware.strftime("%Y%m%dT%H%M%SZ")
         
         elif self.has_naive_dttms:
-            # Use the naive datetime strings, which should already be in the correct format
-            url_dtstart = iso_8601_to_ics_dttm(self.start_dttm_naive)
-            url_dtend = iso_8601_to_ics_dttm(self.end_dttm_naive)
+            # Handle both string and datetime objects for naive datetimes
+            if isinstance(self.start_dttm_naive, str):
+                url_dtstart = iso_8601_to_ics_dttm(self.start_dttm_naive)
+                url_dtend = iso_8601_to_ics_dttm(self.end_dttm_naive)
+            else:
+                url_dtstart = self.start_dttm_naive.strftime("%Y%m%dT%H%M%S")
+                url_dtend = self.end_dttm_naive.strftime("%Y%m%dT%H%M%S")
         
         else:
             raise ValueError("Event must have either dates or datetimes to generate calendar links")

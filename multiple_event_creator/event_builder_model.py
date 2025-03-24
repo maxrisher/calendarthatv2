@@ -27,7 +27,7 @@ class EventBuilder(models.Model):
         on_delete=models.CASCADE,
         null=True,
         blank=True,
-        related_name="multi_event_builders",
+        related_name="events",
     )    
     
     # [DATA] Processing status constants
@@ -97,11 +97,16 @@ class EventBuilder(models.Model):
             await self.asave()
         
         except ZoneInfoNotFoundError:
+            self.build_status = "FAILED"
             self.build_fail_reason = "Invalid timezone."
+            await self.asave()
             raise
         except Exception as e:
             self.build_status = "FAILED"
-            self.build_fail_reason = "Unknown error."
+            self.build_fail_reason = f"Error: {str(e)}"
+            await self.asave()
+            logger.error(f"Event build failed: {str(e)}", exc_info=True)
+            raise
     
     def _event_dict_to_django(self, event_dict):
         now = datetime.now(timezone.utc)
