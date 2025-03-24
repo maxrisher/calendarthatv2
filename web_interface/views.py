@@ -96,10 +96,8 @@ async def download_calendar_event(request): #TODO: rename to download events
                 "error": "Event processing failed" #TODO: rename
             }, status=422)
             
-        events = await Event.objects.filter(builder=event_builder).afirst()
+        first_event = await Event.objects.filter(builder=event_builder).afirst()
         
-        first_event = events[0]
-
         return JsonResponse({
             "gcal_link": first_event.gcal_link,
             "outlook_link": first_event.outlook_link,
