@@ -70,7 +70,7 @@ class LlmCaller:
             blank_user_prompt = file.read()
 
         #TODO: change this to actual code
-        utc_time =  "2025-03-15T14:30" #NB: this is just to the minutes level of precision #timezone.now().strftime('%Y-%m-%dT%H:%M')
+        utc_time = timezone.now().strftime('%Y-%m-%dT%H:%M') #NB: this is just to the minutes level of precision #timezone.now().strftime('%Y-%m-%dT%H:%M')
 
         user_prompt = blank_user_prompt.format(
             utc_time,
