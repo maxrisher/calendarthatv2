@@ -228,6 +228,11 @@ LOGGING = {
             'level': 'DEBUG',
             'propagate': False,
         },
+        'multiple_event_creator': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
         'web_interface': {
             'handlers': ['console'],
             'level': 'DEBUG',
