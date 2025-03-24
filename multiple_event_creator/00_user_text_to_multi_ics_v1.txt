@@ -1,9 +1,9 @@
 <UTC_NOW>
-{}
+{utc_time}
 </UTC_NOW>
 <USER_TIME_ZONE>
-{}
+{user_timezone_name}
 </USER_TIME_ZONE>
 <USER_TEXT>
-{}
+{user_text}
 </USER_TEXT>
