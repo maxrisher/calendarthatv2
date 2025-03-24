@@ -66,8 +66,7 @@ class LlmCaller:
         with open('multiple_event_creator/00_user_text_to_multi_ics_v1.txt', 'r') as file:
             blank_user_prompt = file.read()
 
-        #TODO: change this to actual code
-        utc_time = timezone.now().strftime('%Y-%m-%dT%H:%M') #NB: this is just to the minutes level of precision #timezone.now().strftime('%Y-%m-%dT%H:%M')
+        utc_time = timezone.now().strftime('%Y-%m-%dT%H:%M (%a)') # Full day name #NB: this is just to the minutes level of precision #timezone.now().strftime('%Y-%m-%dT%H:%M')
 
         user_prompt = blank_user_prompt.format(
             utc_time=utc_time,

@@ -1,7 +1,5 @@
 import uuid
 import logging
-from google import genai
-from google.genai import types
 from datetime import datetime, timezone
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 from jsonschema import ValidationError
