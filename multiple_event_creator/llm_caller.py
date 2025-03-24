@@ -1,12 +1,9 @@
 from google import genai
 from google.genai import types
 import os
-from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
-from datetime import datetime
 import logging
-from pydantic import BaseModel
-from typing import List, Optional
 import json
+from jsonschema import validate
 
 from django.utils import timezone
 
@@ -45,14 +42,16 @@ class LlmCaller:
             config=types.GenerateContentConfig(
                 system_instruction=system_prompt,
                 temperature= 0,
-                response_mime_type= 'application/json',
-                response_schema= SHORT_LLM_EVENT_OUTPUT_SCHEMA
+                response_mime_type= 'application/json'
             ),
         )
         
         self._raw_response = llm_response.text
         
         self.response = json.loads(self._raw_response)
+        
+        #this will raise a validation error if the LLM output does not meet our format or is too long (more than 10 events)
+        validate(self.response, schema=SHORT_LLM_EVENT_OUTPUT_SCHEMA) 
 
         logger.debug("LLM API call successful")
 

@@ -47,6 +47,7 @@ LLM_EVENT_OUTPUT_SCHEMA = {
 
 SHORT_LLM_EVENT_OUTPUT_SCHEMA = {
     "type": "array",
+    "maxItems": 10,
     "items": {
         "type": "object",
         "required": [

@@ -4,6 +4,7 @@ from google import genai
 from google.genai import types
 from datetime import datetime, timezone
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
+from jsonschema import ValidationError
 
 from django.db import models
 from django.conf import settings
@@ -101,6 +102,22 @@ class EventBuilder(models.Model):
             self.build_fail_reason = "Invalid timezone."
             await self.asave()
             raise
+        
+        #if the json returned by the llm is bad
+        except ValidationError as validation_error:
+            self.build_status = "FAILED"
+            
+            error_msg = str(validation_error)
+            
+            if "maximum" in error_msg and "items" in error_msg:
+                self.build_fail_reason = "Too many events detected. Please limit your request to 10 or fewer events."
+            else:
+                self.build_fail_reason = f"Invalid event format. Please rephrase your request."
+                
+            logger.error(f"Validation error in LLM response: {error_msg}")
+            await self.asave()
+            raise
+
         except Exception as e:
             self.build_status = "FAILED"
             self.build_fail_reason = f"Error: {str(e)}"
