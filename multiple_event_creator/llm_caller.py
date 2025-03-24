@@ -47,14 +47,12 @@ class LlmCaller:
         )
         
         self._raw_response = llm_response.text
-        
         self.response = json.loads(self._raw_response)
         
         #this will raise a validation error if the LLM output does not meet our format or is too long (more than 10 events)
         validate(self.response, schema=SHORT_LLM_EVENT_OUTPUT_SCHEMA) 
 
         logger.debug("LLM API call successful")
-
         logger.debug(f"System prompt: \n{system_prompt}")
         logger.debug(f"User prompt: \n{user_prompt}")
         logger.debug(f"LLM response: \n{self._raw_response}")
