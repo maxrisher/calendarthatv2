@@ -10,25 +10,22 @@ import re
 
 from django.conf import settings
 
-from event_creator.models import Event
+from multiple_event_creator.event_builder_model import EventBuilder
+from multiple_event_creator.event_model import Event
+
 from .models import Email
 
 logger = logging.getLogger(__name__)
 
-async def send_and_save_event_reply(uuid, destination_email, original_subject, original_message_id):
-    event = await Event.objects.aget(uuid=uuid)
+async def send_and_save_event_reply(event_builder_uuid, destination_email, original_subject, original_message_id):
+    event_builder = await EventBuilder.objects.aget(uuid=event_builder_uuid)
+    events = await Event.objects.filter(builder=event_builder).aorder_by('start_date', 'start_dttm_aware').alist()
+    
     sg = SendGridAPIClient(os.environ.get("SENDGRID_API_KEY"))
     
-    template_email = (settings.BASE_DIR / 'email_interface' / 'new_event_email_template.html').read_text()
-    
-    email_body = template_email.format(
-        gcal_link=event.gcal_link,
-        outlook_link=event.outlook_link, 
-        summary=event.summary,
-        start_datetime=iso_8601_str_to_human_str(event.start_dttm_naive),
-        end_datetime=iso_8601_str_to_human_str(event.end_dttm_naive),
-        location=event.location
-    )
+    master_email_template = (settings.BASE_DIR / 'email_interface' / 'new_event_email_template.html').read_text()
+
+    email_body = master_email_template.format(calendar_events_html=events_to_html_text(events))
     
     msg_subject = original_subject if original_subject else "Your calendar event"
 
@@ -48,18 +45,9 @@ async def send_and_save_event_reply(uuid, destination_email, original_subject, o
         sendgrid_msg.header = Header('In-Reply-To', f'<{original_message_id}>')
         sendgrid_msg.header = Header('References', f'<{original_message_id}>')
         
-        encoded_file = base64.b64encode(event.ics_data.encode('utf-8')).decode()
+        sendgrid_msg_w_ics = attach_ics_files(sendgrid_msg, events)
         
-        attachment = Attachment(
-            FileContent(encoded_file),
-            FileName('event_from_calendarthat.ics'),
-            FileType('text/calendar'),
-            Disposition('attachment')
-        )
-        
-        sendgrid_msg.attachment = attachment
-        
-        response = await asyncio.to_thread(sg.send, sendgrid_msg)
+        response = await asyncio.to_thread(sg.send, sendgrid_msg_w_ics)
         
         logger.info(response.status_code)
         logger.info(response.body)
@@ -79,3 +67,58 @@ def iso_8601_str_to_human_str(iso_8601_str):
 def extract_message_id(headers_str):
     match = re.search(r'Message-ID:\s*<([^>]+)>', headers_str)
     return match.group(1) if match else None
+
+def events_to_html_text(events):
+    event_html_template = (settings.BASE_DIR / 'email_interface' / 'single_event.html').read_text()
+    
+    events_html_text = ""
+    
+    for event in events:
+        description_html = ""
+        if event.description:
+            description_html = f'<p><strong>Description:</strong> {event.description}</p>'
+        
+        # Format the event template
+        formatted_event = event_html_template.format(
+            summary=event.summary,
+            start_datetime=event_to_time_text(event, "start"),
+            end_datetime=event_to_time_text(event, "end"),
+            location=event.location or "No location specified",
+            description_html=description_html,
+            gcal_link=event.gcal_link,
+            outlook_link=event.outlook_link
+        )
+        
+        events_html_text += formatted_event
+        
+    return events_html_text
+    
+def event_to_time_text(event, start_or_end):
+    if event.has_aware_dttms:
+        dt = event.start_dttm_aware if start_or_end == "start" else event.end_dttm_aware
+        return dt.strftime("%B %d, %Y at %I:%M %p %Z")
+    elif event.has_naive_dttms:
+        dt_str = event.start_dttm_naive if start_or_end == "start" else event.end_dttm_naive
+        return iso_8601_str_to_human_str(dt_str)
+    elif event.has_dates:
+        dt = event.start_date if start_or_end == "start" else event.end_date
+        return event.dt.strftime("%B %d, %Y") + " (all day)"
+    
+def attach_ics_files(sendgrid_msg, events):
+    
+    for i, event in enumerate(events):
+        
+        encoded_file = base64.b64encode(event.ics_data.encode('utf-8')).decode()
+        safe_summary = re.sub(r'[^\w\-\.]', '_', event.summary)[:30]
+        filename = f'event_{i+1}_{safe_summary}.ics' if safe_summary else f'event_{i+1}_from_calendarthat.ics'
+            
+        attachment = Attachment(
+            FileContent(encoded_file),
+            FileName(filename),
+            FileType('text/calendar'),
+            Disposition('attachment')
+        )
+        
+        sendgrid_msg.attachment = attachment
+    
+    return sendgrid_msg
