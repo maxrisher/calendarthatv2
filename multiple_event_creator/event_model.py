@@ -87,6 +87,38 @@ class Event(models.Model):
     def __str__(self):
         return self.summary
     
+    def to_dict(self):
+        return {
+            "uuid": str(self.uuid),
+            "summary": self.summary,
+            "builder": self.builder.id if self.builder else None,
+            "built_at": self.built_at.isoformat() if self.built_at else None,
+            "custom_user": self.custom_user.id if self.custom_user else None,
+            
+            # Date/time fields
+            "start_date": self.start_date.isoformat() if self.start_date else None,
+            "end_date": self.end_date.isoformat() if self.end_date else None,
+            "start_dttm_aware": self.start_dttm_aware.isoformat() if self.start_dttm_aware else None,
+            "end_dttm_aware": self.end_dttm_aware.isoformat() if self.end_dttm_aware else None,
+            "start_dttm_naive": self.start_dttm_naive,
+            "end_dttm_naive": self.end_dttm_naive,
+            
+            # Event details
+            "location": self.location,
+            "description": self.description,
+            "recurrence_rules": self.recurrence_rules,
+            
+            # Generated calendar links
+            "gcal_link": self.gcal_link,
+            "outlook_link": self.outlook_link,
+            "ics_data": self.ics_data,
+            
+            # Convenience properties
+            "has_dates": self.has_dates,
+            "has_naive_dttms": self.has_naive_dttms,
+            "has_aware_dttms": self.has_aware_dttms,
+        }
+    
     def clean(self):
         super().clean()
         
