@@ -13,6 +13,7 @@ from accounts.models import CustomUser
 
 from multiple_event_creator.event_builder_model import EventBuilder
 
+from .email_sender import EmailSender
 from .models import Email
 from .utils import send_and_save_event_reply, extract_message_id
 
@@ -55,14 +56,17 @@ async def create_and_send_event(email: Email):
     user = await CustomUser.objects.filter(email=email.sender).afirst()
     logger.info(f"New event creation requested by user {user.id if user else 'anonymous'}")
 
-    event_builder_uuid = uuid.uuid4()
-    
-    event_builder = await EventBuilder.objects.acreate(
-            uuid=event_builder_uuid, 
-            custom_user=user, 
-            user_input_text=email.to_string()
-        )
+    try:
+        event_builder_uuid = uuid.uuid4()
         
-    logger.info(f"Event builder initiated with UUID: {event_builder_uuid}")
-    await event_builder.build()
-    await send_and_save_event_reply(event_builder_uuid, email.sender, email.subject, email.message_id)
+        event_builder = await EventBuilder.objects.acreate(
+                uuid=event_builder_uuid, 
+                custom_user=user, 
+                user_input_text=email.to_string()
+            )
+            
+        logger.info(f"Event builder initiated with UUID: {event_builder_uuid}")
+        await event_builder.build()
+        await send_and_save_event_reply(event_builder_uuid, email.sender, email.subject, email.message_id)
+    except Exception:
+        await EmailSender().reply(email.subject, "Sorry, an unexpected error occured", email.message_id, email.sender)
