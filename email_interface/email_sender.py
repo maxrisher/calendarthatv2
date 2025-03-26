@@ -23,11 +23,11 @@ class EmailSender:
         sendgrid_msg.header = Header('References', f'<{replying_to_message_id}>')
         
         #TODO: not sure why we need to add this to thread. why not just await?
-        response = await asyncio.to_thread(sg.send, sendgrid_msg)
+        response = await asyncio.to_thread(self.send_grid_client.send, sendgrid_msg)
 
         await self._save_sent_mail_to_db(subject, body, replying_to_address)
 
-    async def _save_sent_mail_to_db(subject, body, receiver):
+    async def _save_sent_mail_to_db(self, subject, body, receiver):
         await Email.objects.acreate(subject=subject, 
                                     body=body, 
                                     sender=settings.CALENDARTHAT_EVENT_EMAIL_SENDER_ADDRESS,

@@ -1,21 +1,14 @@
-import uuid
 import logging
 import json
 import asyncio
 
-from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from django.http import JsonResponse
 from django.conf import settings
 
-from accounts.models import CustomUser
-
-from multiple_event_creator.event_builder_model import EventBuilder
-
-from .email_sender import EmailSender
 from .models import Email
-from .utils import send_and_save_event_reply, extract_message_id
+from .utils import extract_message_id, create_and_send_event
 
 logger = logging.getLogger(__name__)
 
@@ -51,22 +44,3 @@ async def receive_email(request):
         return JsonResponse({
             "error": "Unexpected error occured"
         }, status=500)
-
-async def create_and_send_event(email: Email):
-    user = await CustomUser.objects.filter(email=email.sender).afirst()
-    logger.info(f"New event creation requested by user {user.id if user else 'anonymous'}")
-
-    try:
-        event_builder_uuid = uuid.uuid4()
-        
-        event_builder = await EventBuilder.objects.acreate(
-                uuid=event_builder_uuid, 
-                custom_user=user, 
-                user_input_text=email.to_string()
-            )
-            
-        logger.info(f"Event builder initiated with UUID: {event_builder_uuid}")
-        await event_builder.build()
-        await send_and_save_event_reply(event_builder_uuid, email.sender, email.subject, email.message_id)
-    except Exception:
-        await EmailSender().reply(email.subject, "Sorry, an unexpected error occured", email.message_id, email.sender)

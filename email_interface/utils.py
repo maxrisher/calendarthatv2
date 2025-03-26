@@ -7,15 +7,37 @@ import base64
 from pathlib import Path
 from datetime import datetime
 import re
+import uuid
 
 from django.conf import settings
 
+from accounts.models import CustomUser
 from multiple_event_creator.event_builder_model import EventBuilder
 from multiple_event_creator.event_model import Event
 
 from .models import Email
+from .email_sender import EmailSender
 
 logger = logging.getLogger(__name__)
+
+async def create_and_send_event(email: Email):
+    user = await CustomUser.objects.filter(email=email.sender).afirst()
+    logger.info(f"New event creation requested by user {user.id if user else 'anonymous'}")
+
+    try:
+        event_builder_uuid = uuid.uuid4()
+        
+        event_builder = await EventBuilder.objects.acreate(
+                uuid=event_builder_uuid, 
+                custom_user=user, 
+                user_input_text=email.to_string()
+            )
+            
+        logger.info(f"Event builder initiated with UUID: {event_builder_uuid}")
+        await event_builder.build()
+        await send_and_save_event_reply(event_builder_uuid, email.sender, email.subject, email.message_id)
+    except Exception:
+        await EmailSender().reply(email.subject, "Sorry, an unexpected error occured", email.message_id, email.sender)
 
 async def send_and_save_event_reply(event_builder_uuid, destination_email, original_subject, original_message_id):
     event_builder = await EventBuilder.objects.aget(uuid=event_builder_uuid)
@@ -23,7 +45,7 @@ async def send_and_save_event_reply(event_builder_uuid, destination_email, origi
     
     sg = SendGridAPIClient(os.environ.get("SENDGRID_API_KEY"))
     
-    master_email_template = (settings.BASE_DIR / 'email_interface' / 'new_event_email_template.html').read_text()
+    master_email_template = (settings.BASE_DIR / 'email_interface' / 'master_new_event_email_template.html').read_text()
 
     email_body = master_email_template.format(calendar_events_html=events_to_html_text(events))
     
@@ -36,15 +58,15 @@ async def send_and_save_event_reply(event_builder_uuid, destination_email, origi
     
     try:
         sendgrid_msg = Mail(
-            from_email=(msg_to_send.sender, "CalendarThat"),
+            from_email=(msg_to_send.sender, "CalendarThat"), #email fields want both an address and a display name
             to_emails=msg_to_send.receiver,
             subject=msg_to_send.subject,
             html_content=msg_to_send.body,
         )
         
-        sendgrid_msg.header = Header('In-Reply-To', f'<{original_message_id}>')
         sendgrid_msg.header = Header('References', f'<{original_message_id}>')
-        
+        sendgrid_msg.header = Header('In-Reply-To', f'<{original_message_id}>')
+
         sendgrid_msg_w_ics = attach_ics_files(sendgrid_msg, events)
         
         response = await asyncio.to_thread(sg.send, sendgrid_msg_w_ics)
@@ -69,7 +91,7 @@ def extract_message_id(headers_str):
     return match.group(1) if match else None
 
 def events_to_html_text(events):
-    event_html_template = (settings.BASE_DIR / 'email_interface' / 'single_event.html').read_text()
+    event_html_template = (settings.BASE_DIR / 'email_interface' / 'single_event_template.html').read_text()
     
     events_html_text = ""
     
@@ -102,7 +124,7 @@ def event_to_time_text(event, start_or_end):
         return iso_8601_str_to_human_str(dt_str)
     elif event.has_dates:
         dt = event.start_date if start_or_end == "start" else event.end_date
-        return event.dt.strftime("%B %d, %Y") + " (all day)"
+        return dt.strftime("%B %d, %Y") + " (all day)"
     
 def attach_ics_files(sendgrid_msg, events):
     
