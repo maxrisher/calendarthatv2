@@ -60,6 +60,7 @@ INSTALLED_APPS = [
     "event_creator",
     "web_interface",
     "email_interface",
+    "multiple_event_creator",
 ]
 
 MIDDLEWARE = [
@@ -223,6 +224,11 @@ LOGGING = {
     },
     'loggers': {
         'event_creator': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+        'multiple_event_creator': {
             'handlers': ['console'],
             'level': 'DEBUG',
             'propagate': False,

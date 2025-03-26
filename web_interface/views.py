@@ -7,8 +7,8 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 
-from event_creator.models import Event
-from event_creator.new_event import EventBuilder
+from multiple_event_creator.event_builder_model import EventBuilder
+from multiple_event_creator.event_model import Event
 
 logger = logging.getLogger(__name__)
 
@@ -21,11 +21,11 @@ async def home(request):
     user = await request.auser()
     return render(request, 'web_interface/home.html', {'user': user})
 
-async def create_event_web(request):
+async def create_events_web(request):
     """
     [INTERFACE] Initiates asynchronous calendar event creation process
     [IN] HTTP POST request with event_text and optional authenticated user
-    [OUT] JSON response with event UUID for tracking
+    [OUT] JSON response with event builder UUID for tracking
     """
     logger.debug(f"""
     Request Method: {request.method}
@@ -37,128 +37,79 @@ async def create_event_web(request):
     user = await request.auser()
     event_text = request.POST.get('event_text', '')
 
-    logger.info(f"New event creation requested by user {user.id if user.is_authenticated else 'anonymous'}")
+    logger.info(f"New events build requested by user {user.id if user.is_authenticated else 'anonymous'}")
     
-    event_uuid = uuid.uuid4()
+    event_builder_uuid = uuid.uuid4()
 
-    await Event.objects.acreate(
-        uuid=event_uuid, 
+    event_builder = await EventBuilder.objects.acreate(
+        uuid=event_builder_uuid, 
         custom_user=user if user.is_authenticated else None, 
-        user_input=event_text
+        user_input_text=event_text
         )
 
-    new_event = EventBuilder(event_uuid, event_text)
-    asyncio.create_task(new_event.formalize())
+    asyncio.create_task(event_builder.build())
     
-    logger.info(f"Event creation initiated with UUID: {event_uuid}")
+    logger.info(f"Event builder made with UUID: {event_builder_uuid}")
     
     return JsonResponse({
-        "event_uuid": str(event_uuid)
+        "event_builder_uuid": str(event_builder_uuid)
     })
 
 @csrf_exempt # NB: Mallicious websites will be able to make requests through our users to this endpoint
-async def get_event_status(request):
+async def get_event_builder_status(request):
     """
-    [INTERFACE] Retrieves current status of event processing
-    [IN] HTTP GET request with event_uuid
-    [OUT] JSON response with build_status (STARTED/DONE/FAILED) or error
+    [INTERFACE] Retrieves current status of event builder
+    [IN] HTTP GET request with event_builder_uuid
+    [OUT] JSON response with event builder build_status (STARTED/DONE/FAILED/NOT_FOUND) and optionally the fail reason
     """
     try:
-        event_uuid = uuid.UUID(request.GET.get('event_uuid'))
-        event = await Event.objects.aget(uuid=event_uuid)
-
-        return JsonResponse({
-            "build_status": event.build_status
-        })
+        event_builder_uuid = uuid.UUID(request.GET.get('event_builder_uuid')) #TODO: rename this to event_build_uuid
+        event_builder = await EventBuilder.objects.aget(uuid=event_builder_uuid)
         
-    except Event.DoesNotExist:
+        response_data = {"event_builder_status": event_builder.build_status}
+        if event_builder.build_status == EventBuilder.FAILED and event_builder.build_fail_reason:
+            response_data["event_builder_fail_reason"] = event_builder.build_fail_reason
+            
+        return JsonResponse(response_data)
+        
+    except EventBuilder.DoesNotExist:
         return JsonResponse({
-            "error": "Event not found"
+            "event_builder_status": "NOT_FOUND"
         }, status=404)
 
 @csrf_exempt # NB: Mallicious websites will be able to make requests through our users to this endpoint
-async def download_calendar_event(request):
+async def download_multiple_events(request): #TODO: rename to download events
     """
-    [INTERFACE] Provides calendar event download data if processing complete
-    [IN] HTTP GET request with event_uuid
+    [INTERFACE] Provides calendar event download data for all created events if processing complete
+    [IN] HTTP GET request with event_builder_uuid
     [OUT] JSON response with calendar links (Google Calendar, Outlook) and ICS data, or error if not ready
     """
     try:
-        event_uuid = uuid.UUID(request.GET.get('event_uuid'))
-        event = await Event.objects.aget(uuid=event_uuid)
+        event_builder_uuid = uuid.UUID(request.GET.get('event_builder_uuid'))
+        event_builder = await EventBuilder.objects.aget(uuid=event_builder_uuid)
         
-        if event.build_status == Event.STARTED:
+        if event_builder.build_status == EventBuilder.STARTED:
             return JsonResponse({
-                "error": "Event still processing"
+                "error": "Event builder still processing" 
             }, status=409)
             
-        if event.build_status == Event.FAILED:
+        if event_builder.build_status == EventBuilder.FAILED:
             return JsonResponse({
-                "error": "Event processing failed"
+                "error": "Event builder failed"
             }, status=422)
-
-        return JsonResponse({
-            "gcal_link": event.gcal_link,
-            "outlook_link": event.outlook_link,
-            "ics_data": event.ics_data
-        })
+            
+        events = await Event.objects.filter(builder=event_builder).all()
+        events_data = [event.to_dict() for event in events]
+        
+        return JsonResponse(events_data, safe=False)
     
-    except Event.DoesNotExist:
+    except EventBuilder.DoesNotExist:
         return JsonResponse({
-            "error": "Event not found"
+            "error": "Event builder not found"
         }, status=404)
     
     except Exception as e:
-        logger.error(f"Unexpected error in download_calendar_event: {str(e)}")
+        logger.error(f"Unexpected error in download_multiple_events: {str(e)}")
         return JsonResponse({
             "error": "Unexpected error occured"
         }, status=500)
-
-async def check_auth(request):
-    user = await request.auser()
-    
-    if user.is_authenticated:
-        return JsonResponse({"message": "Authenticated"}, status=200) 
-    else:
-        return JsonResponse({"error": "Not authenticated"}, status=401) 
-
-@csrf_exempt # NB: Mallicious websites will be able to make requests through our users to this endpoint
-async def create_event_browser_extension(request):
-    """
-    [INTERFACE] Initiates asynchronous calendar event creation process
-    [IN] HTTP POST request with event_text and optional authenticated user
-    [OUT] JSON response with event UUID for tracking
-    """
-    logger.debug(f"""
-    Request Method: {request.method}
-    Request Path: {request.path}
-    Request GET: {request.GET}
-    Request POST: {request.POST}
-    Request Headers: {dict(request.headers)}
-    """)
-    user = await request.auser()
-    event_text = request.POST.get('event_text', '')
-    
-    if not user.is_authenticated:
-        return JsonResponse({
-            "error": "Unauthorized"
-        }, status=401)
-
-    logger.info(f"New event creation requested by user {user.id if user.is_authenticated else 'anonymous'}")
-    
-    event_uuid = uuid.uuid4()
-
-    await Event.objects.acreate(
-        uuid=event_uuid, 
-        custom_user=user if user.is_authenticated else None, 
-        user_input=event_text
-        )
-
-    new_event = EventBuilder(event_uuid, event_text)
-    asyncio.create_task(new_event.formalize())
-    
-    logger.info(f"Event creation initiated with UUID: {event_uuid}")
-    
-    return JsonResponse({
-        "event_uuid": str(event_uuid)
-    })
