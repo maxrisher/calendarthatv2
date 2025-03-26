@@ -36,7 +36,8 @@ async def create_and_send_event(email: Email):
         logger.info(f"Event builder initiated with UUID: {event_builder_uuid}")
         await event_builder.build()
         await send_and_save_event_reply(event_builder_uuid, email.sender, email.subject, email.message_id)
-    except Exception:
+    except Exception as e:
+        logger.error(f"Unexpected error in create_and_send_event: {str(e)}")
         await EmailSender().reply(email.subject, "Sorry, an unexpected error occured", email.message_id, email.sender)
 
 async def send_and_save_event_reply(event_builder_uuid, destination_email, original_subject, original_message_id):
