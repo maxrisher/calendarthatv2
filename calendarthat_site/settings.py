@@ -33,6 +33,7 @@ ALLOWED_HOSTS = [
     'calendarthatv2-production.up.railway.app',
     'calendarthatv2-staging.up.railway.app',
     '127.0.0.1',
+    'staging.calendarthat.com',
     os.getenv('RAILWAY_PUBLIC_DOMAIN')]
 
 
@@ -195,6 +196,7 @@ SITE_ID = 1
 CSRF_TRUSTED_ORIGINS = [
     "https://www.calendarthat.com",
     "https://calendarthat.com",
+    "https://staging.calendarthat.com",
     "https://calendarthatv2-production.up.railway.app", 
     "https://calendarthatv2-staging.up.railway.app", 
     f"https://{os.getenv('RAILWAY_PUBLIC_DOMAIN')}",

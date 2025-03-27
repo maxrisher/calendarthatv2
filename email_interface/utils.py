@@ -5,7 +5,7 @@ import asyncio
 import logging
 import base64
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timedelta
 import re
 import uuid
 
@@ -36,12 +36,13 @@ async def create_and_send_event(email: Email):
         logger.info(f"Event builder initiated with UUID: {event_builder_uuid}")
         await event_builder.build()
         await send_and_save_event_reply(event_builder_uuid, email.sender, email.subject, email.message_id)
-    except Exception:
+    except Exception as e:
+        logger.error(f"Unexpected error in create_and_send_event: {str(e)}")
         await EmailSender().reply(email.subject, "Sorry, an unexpected error occured", email.message_id, email.sender)
 
 async def send_and_save_event_reply(event_builder_uuid, destination_email, original_subject, original_message_id):
     event_builder = await EventBuilder.objects.aget(uuid=event_builder_uuid)
-    events = await Event.objects.filter(builder=event_builder).aorder_by('start_date', 'start_dttm_aware').alist()
+    events = [event async for event in Event.objects.filter(builder=event_builder).order_by('start_date', 'start_dttm_aware')]
     
     sg = SendGridAPIClient(os.environ.get("SENDGRID_API_KEY"))
     
@@ -123,8 +124,14 @@ def event_to_time_text(event, start_or_end):
         dt_str = event.start_dttm_naive if start_or_end == "start" else event.end_dttm_naive
         return iso_8601_str_to_human_str(dt_str)
     elif event.has_dates:
-        dt = event.start_date if start_or_end == "start" else event.end_date
-        return dt.strftime("%B %d, %Y") + " (all day)"
+        if start_or_end == "start":
+            start_date = event.start_date
+            return start_date.strftime("%B %d, %Y") + " (all day)"
+        
+        elif start_or_end == "end":
+            ics_end_date = event.end_date
+            actual_last_date = ics_end_date - timedelta(days=1)
+            return actual_last_date.strftime("%B %d, %Y") + " (all day)"
     
 def attach_ics_files(sendgrid_msg, events):
     
