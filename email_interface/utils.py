@@ -5,7 +5,7 @@ import asyncio
 import logging
 import base64
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timedelta
 import re
 import uuid
 
@@ -124,8 +124,14 @@ def event_to_time_text(event, start_or_end):
         dt_str = event.start_dttm_naive if start_or_end == "start" else event.end_dttm_naive
         return iso_8601_str_to_human_str(dt_str)
     elif event.has_dates:
-        dt = event.start_date if start_or_end == "start" else event.end_date
-        return dt.strftime("%B %d, %Y") + " (all day)"
+        if start_or_end == "start":
+            start_date = event.start_date
+            return start_date.strftime("%B %d, %Y") + " (all day)"
+        
+        elif start_or_end == "end":
+            ics_end_date = event.end_date
+            actual_last_date = ics_end_date - timedelta(days=1)
+            return actual_last_date.strftime("%B %d, %Y") + " (all day)"
     
 def attach_ics_files(sendgrid_msg, events):
     

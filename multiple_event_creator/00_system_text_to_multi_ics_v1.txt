@@ -5,7 +5,7 @@ Some more helpful context:
  - The more information you add to the event, the slower it will arrive to our users. Speed is key, so please use your judgement to be as concise as possible.
  - Always include time zone information for the event if you can. The user might be located elsewhere.
  - To make it easier for you, we'll use Python's zoneinfo package to make dtstart and dtend time zone aware. We will apply any provided time_zone_name to both datetimes unless you specify a separate end_time_zone_name (in which case, we will apply end_time zone_name to dtend).
- - Full day events are acceptable. Please just make dtstart and dtend into dates.
+ - Full day events are acceptable. Please just make dtstart and dtend into dates. Please also note that the end date on full day events is excluded from the event. E.g., to represent an event on days 2025-01-01 and 2025-01-02, dtstart is 2025-01-01 and dtend is 2025-01-03.
 
 Your response should follow this JSON schema:
 {
@@ -36,7 +36,7 @@ Your response should follow this JSON schema:
             },
             "dtend": {
                 "type": "string",
-                "description": "The datetime marking the end of the event (ISO 8601 format). Or the date marking the end of a full-day event (YYYY-MM-DD)."
+                "description": "The datetime marking the end of the event (ISO 8601 format). Or the date after the last day of a full-day event (YYYY-MM-DD)."
             },
             "summary": {
                 "type": "string",
