@@ -42,7 +42,7 @@ async def create_and_send_event(email: Email):
 
 async def send_and_save_event_reply(event_builder_uuid, destination_email, original_subject, original_message_id):
     event_builder = await EventBuilder.objects.aget(uuid=event_builder_uuid)
-    events = await Event.objects.filter(builder=event_builder).aorder_by('start_date', 'start_dttm_aware').alist()
+    events = await Event.objects.filter(builder=event_builder).order_by('start_date', 'start_dttm_aware').alist()
     
     sg = SendGridAPIClient(os.environ.get("SENDGRID_API_KEY"))
     
