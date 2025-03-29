@@ -87,11 +87,11 @@ class Event(models.Model):
     def __str__(self):
         return self.summary
     
-    def to_dict(self):
+    def to_async_safe_dict(self):
         return {
             "uuid": str(self.uuid),
             "summary": self.summary,
-            "builder": self.builder.id if self.builder else None,
+            # "builder": self.builder.id if self.builder else None,
             "built_at": self.built_at.isoformat() if self.built_at else None,
             "custom_user": self.custom_user.id if self.custom_user else None,
             
