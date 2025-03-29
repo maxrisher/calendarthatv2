@@ -106,7 +106,8 @@ async function pollStatus(eventBuilderUuid){
     try {
         const startTime = Date.now();
         const statusResponse = await fetch(`{% url 'get_event_builder_status' %}?event_uuid=${eventBuilderUuid}`);
-        
+        const resultLinks = document.getElementById('result-links'); 
+
         if (!statusResponse.ok) {
             throw new Error('Status check failed');
         }
@@ -162,7 +163,6 @@ document.getElementById('event-form').onsubmit = async (evt) => {
     show_button_loading(true);
     
     const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-    const resultLinks = document.getElementById('result-links'); 
     
     try {
         // Create FormData object to match regular form submission
@@ -183,6 +183,7 @@ document.getElementById('event-form').onsubmit = async (evt) => {
                 
     } catch (error) {
         console.error('Error:', error);
+        const resultLinks = document.getElementById('result-links'); 
         resultLinks.innerHTML = '<p>Something went wrong. Please try again.</p>';
         show_button_loading(false);
     }
