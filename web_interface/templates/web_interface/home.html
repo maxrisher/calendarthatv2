@@ -103,10 +103,11 @@ function show_button_loading(show_loading_bool){
 }
 
 async function pollStatus(eventBuilderUuid){
+    const startTime = Date.now();
+    const resultLinks = document.getElementById('result-links'); 
+
     try {
-        const startTime = Date.now();
-        const statusResponse = await fetch(`{% url 'get_event_builder_status' %}?event_uuid=${eventBuilderUuid}`);
-        const resultLinks = document.getElementById('result-links'); 
+        const statusResponse = await fetch(`{% url 'get_event_builder_status' %}?event_builder_uuid=${eventBuilderUuid}`);
 
         if (!statusResponse.ok) {
             throw new Error('Status check failed');
@@ -115,20 +116,23 @@ async function pollStatus(eventBuilderUuid){
         const buildStatus = await statusResponse.json();
 
         if (buildStatus.event_builder_status === 'DONE') {
-            const downloadResponse = await fetch(`{% url 'download_multiple_events' %}?event_uuid=${eventBuilderUuid}`);
+            const downloadResponse = await fetch(`{% url 'download_multiple_events' %}?event_builder_uuid=${eventBuilderUuid}`);
+            console.log(downloadResponse);
             if (!downloadResponse.ok) {
                 throw new Error('Download failed');
             }
             const events_data = await downloadResponse.json();
             
             for (const event of events_data) { //TODO: make this into js syntax
-                // TODO: make this so that each event doesn't replace but instead adds to previous events
+                console.log(event);
                 const eventElement = document.createElement('div');
                 eventElement.innerHTML = `
                     <a href="${event.gcal_link}" class="block w-full text-center bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors mb-3">Add to Google Calendar</a>
                     <a href="${event.outlook_link}" class="block w-full text-center bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors mb-3">Add to Outlook</a>
                     <p class="text-gray-600 text-center">ICS download coming soon!</p>
                 `;
+                console.log(eventElement.innerHTML);
+
                 resultLinks.appendChild(eventElement);
                 // TODO: make the ics so it actually downloads ics instead of saying coming soon
             }
@@ -137,7 +141,7 @@ async function pollStatus(eventBuilderUuid){
             
         }  else if (buildStatus.event_builder_status === 'STARTED') {
             if (Date.now() - startTime < 30000) { // 30 seconds timeout
-                setTimeout(pollStatus, 500);
+                setTimeout(() => pollStatus(eventBuilderUuid), 500);
             } else {
                 throw new Error('Event creation timed out');
             }

@@ -98,8 +98,8 @@ async def download_multiple_events(request):
                 "error": "Event builder failed"
             }, status=422)
             
-        events = await Event.objects.filter(builder=event_builder).all()
-        events_data = [event.to_dict() for event in events]
+        events = [event async for event in Event.objects.filter(builder=event_builder).order_by('start_date', 'start_dttm_aware')]
+        events_data = [event.to_async_safe_dict() for event in events]
         
         return JsonResponse(events_data, safe=False)
     
