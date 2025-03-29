@@ -63,7 +63,7 @@ async def get_event_builder_status(request):
     [OUT] JSON response with event builder build_status (STARTED/DONE/FAILED/NOT_FOUND) and optionally the fail reason
     """
     try:
-        event_builder_uuid = uuid.UUID(request.GET.get('event_builder_uuid')) #TODO: rename this to event_build_uuid
+        event_builder_uuid = uuid.UUID(request.GET.get('event_builder_uuid'))
         event_builder = await EventBuilder.objects.aget(uuid=event_builder_uuid)
         
         response_data = {"event_builder_status": event_builder.build_status}
@@ -78,7 +78,7 @@ async def get_event_builder_status(request):
         }, status=404)
 
 @csrf_exempt # NB: Mallicious websites will be able to make requests through our users to this endpoint
-async def download_multiple_events(request): #TODO: rename to download events
+async def download_multiple_events(request):
     """
     [INTERFACE] Provides calendar event download data for all created events if processing complete
     [IN] HTTP GET request with event_builder_uuid
