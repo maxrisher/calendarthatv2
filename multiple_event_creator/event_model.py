@@ -2,6 +2,7 @@ import uuid
 from urllib.parse import quote
 from icalendar import vRecur, Calendar, Event as ICalEvent
 from datetime import datetime
+import pytz
 
 from django.db import models
 from django.conf import settings
@@ -87,11 +88,11 @@ class Event(models.Model):
     def __str__(self):
         return self.summary
     
-    def to_dict(self):
+    def to_async_safe_dict(self):
         return {
             "uuid": str(self.uuid),
             "summary": self.summary,
-            "builder": self.builder.id if self.builder else None,
+            # "builder": self.builder.id if self.builder else None,
             "built_at": self.built_at.isoformat() if self.built_at else None,
             "custom_user": self.custom_user.id if self.custom_user else None,
             
@@ -155,8 +156,8 @@ class Event(models.Model):
         
         elif self.has_aware_dttms:
             # Format timezone-aware datetimes as YYYYMMDDTHHmmssZ
-            url_dtstart = self.start_dttm_aware.strftime("%Y%m%dT%H%M%SZ")
-            url_dtend = self.end_dttm_aware.strftime("%Y%m%dT%H%M%SZ")
+            url_dtstart = self.start_dttm_aware.astimezone(pytz.UTC).strftime("%Y%m%dT%H%M%SZ")
+            url_dtend = self.end_dttm_aware.astimezone(pytz.UTC).strftime("%Y%m%dT%H%M%SZ")
         
         elif self.has_naive_dttms:
             # Use the naive datetime strings, which should already be in the correct format
@@ -191,8 +192,8 @@ class Event(models.Model):
             end_str = self.end_date.strftime("%Y-%m-%d")
         
         elif self.has_aware_dttms:
-            start_str = self.start_dttm_aware.strftime("%Y-%m-%dT%H:%M:%SZ")
-            end_str = self.end_dttm_aware.strftime("%Y-%m-%dT%H:%M:%SZ")
+            start_str = self.start_dttm_aware.astimezone(pytz.UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
+            end_str = self.end_dttm_aware.astimezone(pytz.UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
         
         elif self.has_naive_dttms:
             start_str = self.start_dttm_naive
