@@ -4,9 +4,6 @@
 <div class="max-w-2xl mx-auto p-6">
     <!-- Existing Form -->
     <form id="event-form" class="space-y-4">
-
-    <!-- Existing Form -->
-    <form id="event-form" class="space-y-4">
         {% csrf_token %}
         <input type="text" 
                id="event-text" 
@@ -82,107 +79,139 @@
 </div>
 
 <script>
-    document.getElementById('event-form').onsubmit = async (e) => {
-        e.preventDefault();
-        
-        // Get button elements
-        const buttonDefault = document.getElementById('button-default');
-        const buttonLoading = document.getElementById('button-loading');
-        const submitButton = document.getElementById('submit-button');
-        
+function show_button_loading(show_loading_bool){
+    // Get button elements
+    const buttonDefault = document.getElementById('button-default');
+    const buttonLoading = document.getElementById('button-loading');
+    const submitButton = document.getElementById('submit-button');
+    
+    if (show_loading_bool){
         // Show loading state
         buttonDefault.classList.add('hidden');
         buttonLoading.classList.remove('hidden');
         buttonLoading.classList.add('flex');
         submitButton.disabled = true;
-        
-        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-        const resultLinks = document.getElementById('result-links'); 
-        
-        try {
-            // Create FormData object to match regular form submission
-            const formData = new FormData();
-            formData.append('event_text', document.getElementById('event-text').value);
-            
-            const createResponse = await fetch("{% url 'create_event_web' %}", {
-                method: 'POST',
-                headers: {
-                    'X-CSRFToken': csrfToken
-                },
-                body: formData
-            });
-            const { event_uuid } = await createResponse.json();
-            
-            const pollStatus = async () => {
-                try {
-                    const statusResponse = await fetch(`{% url 'get_event_status' %}?event_uuid=${event_uuid}`);
-                    if (!statusResponse.ok) {
-                        throw new Error('Status check failed');
-                    }
-                    const { build_status } = await statusResponse.json();
-                    if (build_status === 'DONE') {
-                        const downloadResponse = await fetch(`{% url 'download_calendar_event' %}?event_uuid=${event_uuid}`);
-                        if (!downloadResponse.ok) {
-                            throw new Error('Download failed');
-                        }
-                        const links = await downloadResponse.json();
-                        
-                        resultLinks.innerHTML = `
-                            <a href="${links.gcal_link}" class="block w-full text-center bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors mb-3">Add to Google Calendar</a>
-                            <a href="${links.outlook_link}" class="block w-full text-center bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors mb-3">Add to Outlook</a>
-                            <p class="text-gray-600 text-center">ICS download coming soon!</p>
-                        `;
-                        
-                        // Reset button state
-                        buttonLoading.classList.remove('flex');
-                        buttonLoading.classList.add('hidden');
-                        buttonDefault.classList.remove('hidden');
-                        submitButton.disabled = false;
-                        
-                    } else if (build_status === 'FAILED') {
-                        resultLinks.innerHTML = '<p>Event creation failed. A common reason is that the text does not contain a date and time (e.g., "Frankies\'s Party" rather than "Frankie\'s Party  on Thursday at 2pm").</p>';
-                        
-                        // Reset button state
-                        buttonLoading.classList.remove('flex');
-                        buttonLoading.classList.add('hidden');
-                        buttonDefault.classList.remove('hidden');
-                        submitButton.disabled = false;
-                        
-                    } else {
-                        // Continue polling if status is still "STARTED", but only for up to 30 seconds
-                        if (Date.now() - startTime < 30000) { // 30 seconds timeout
-                            setTimeout(pollStatus, 500);
-                        } else {
-                            throw new Error('Event creation timed out');
-                        }
-                    }
-                } catch (error) {
-                    resultLinks.innerHTML = '<p>Something went wrong while creating your event. Please try again.</p>';
-                    
-                    // Reset button state
-                    buttonLoading.classList.remove('flex');
-                    buttonLoading.classList.add('hidden');
-                    buttonDefault.classList.remove('hidden');
-                    submitButton.disabled = false;
-                    
-                    console.error('Error:', error);
-                }
-            };
-            
-            const startTime = Date.now();
-            pollStatus();
-            
-        } catch (error) {
-            console.error('Error:', error);
-            resultLinks.innerHTML = '<p>Something went wrong. Please try again.</p>';
-            
-            // Reset button state
-            buttonLoading.classList.remove('flex');
-            buttonLoading.classList.add('hidden');
-            buttonDefault.classList.remove('hidden');
-            submitButton.disabled = false;
+    }
+    else{
+        // Reset button state
+        buttonLoading.classList.remove('flex');
+        buttonLoading.classList.add('hidden');
+        buttonDefault.classList.remove('hidden');
+        submitButton.disabled = false;
+    }
+
+}
+
+async function pollStatus(eventBuilderUuid){
+    const startTime = Date.now();
+    const resultLinks = document.getElementById('result-links'); 
+
+    try {
+        const statusResponse = await fetch(`{% url 'get_event_builder_status' %}?event_builder_uuid=${eventBuilderUuid}`);
+
+        if (!statusResponse.ok) {
+            throw new Error('Status check failed');
         }
-    };
+
+        const buildStatus = await statusResponse.json();
+
+        if (buildStatus.event_builder_status === 'DONE') {
+            const downloadResponse = await fetch(`{% url 'download_multiple_events' %}?event_builder_uuid=${eventBuilderUuid}`);
+            console.log(downloadResponse);
+            if (!downloadResponse.ok) {
+                throw new Error('Download failed');
+            }
+            const events_data = await downloadResponse.json();
+
+            // clear out all previous created events from webpage
+            resultLinks.innerHTML = '';
+        
+            const cardsContainer = document.createElement('div');
+            cardsContainer.className = 'space-y-4';
+            
+            for (const event of events_data) {
+                // Create a truncated title (limit to 40 characters)
+                const truncatedTitle = event.summary.length > 40 
+                    ? event.summary.substring(0, 40) + '...' 
+                    : event.summary;
+                
+                // Create ICS download link using data URL
+                const sanitizedFilename = event.summary.replace(/[^a-z0-9]/gi, '_').slice(0, 30);
+                const base64Data = btoa(event.ics_data);
+                const dataUrl = `data:text/calendar;charset=utf-8;base64,${base64Data}`;
+                
+                const eventElement = document.createElement('div');
+                eventElement.className = 'bg-white shadow-md rounded-lg overflow-hidden border border-gray-200';
+                eventElement.innerHTML = `
+                    <div class="p-4 bg-gray-50 border-b border-gray-200">
+                        <h3 class="font-medium text-gray-900 text-lg truncate">${truncatedTitle}</h3>
+                    </div>
+                    <div class="p-4 grid grid-cols-3 gap-2">
+                        <a href="${event.gcal_link}" target="_blank" class="block text-center bg-green-500 text-white py-2 px-3 rounded hover:bg-green-600 transition-colors text-sm">Google Calendar</a>
+                        <a href="${event.outlook_link}" target="_blank" class="block text-center bg-blue-700 text-white py-2 px-3 rounded hover:bg-blue-800 transition-colors text-sm">Outlook</a>
+                        <a href="${dataUrl}" download="event_${sanitizedFilename}.ics" class="block text-center bg-red-500 text-white py-2 px-3 rounded hover:bg-red-600 transition-colors text-sm">Download ICS</a>
+                    </div>
+                `;
+                
+                cardsContainer.appendChild(eventElement);
+            }
+            
+            resultLinks.appendChild(cardsContainer);
+            show_button_loading(false);
+            
+        }  else if (buildStatus.event_builder_status === 'STARTED') {
+            if (Date.now() - startTime < 30000) { // 30 seconds timeout
+                setTimeout(() => pollStatus(eventBuilderUuid), 500);
+            } else {
+                throw new Error('Event creation timed out');
+            }
+        } 
+        
+        else {
+            resultLinks.innerHTML = '<p>Event creation failed. A common reason is that the text does not contain a date and time (e.g., "Frankies\'s Party" rather than "Frankie\'s Party  on Thursday at 2pm").</p>';
+            show_button_loading(false);
+        } 
+    } catch (error) {
+        resultLinks.innerHTML = '<p>Something went wrong while creating your event. Please try again.</p>';
+        
+        show_button_loading(false)
+        
+        console.error('Error:', error);
+    }
+}
+
+
+document.getElementById('event-form').onsubmit = async (evt) => {
+    evt.preventDefault();
+    
+    show_button_loading(true);
+    
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    
+    try {
+        // Create FormData object to match regular form submission
+        const formData = new FormData();
+        formData.append('event_text', document.getElementById('event-text').value);
+        
+        const createResponse = await fetch("{% url 'create_multiple_events_web' %}", {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken
+            },
+            body: formData
+        });
+
+        const eventBuilderResponse = await createResponse.json();
+        const eventBuilderUuid = eventBuilderResponse.event_builder_uuid;
+        await pollStatus(eventBuilderUuid);
+                
+    } catch (error) {
+        console.error('Error:', error);
+        const resultLinks = document.getElementById('result-links'); 
+        resultLinks.innerHTML = '<p>Something went wrong. Please try again.</p>';
+        show_button_loading(false);
+    }
+};
 </script>
 
 {% endblock %}
