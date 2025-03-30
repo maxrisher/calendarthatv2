@@ -122,21 +122,41 @@ async function pollStatus(eventBuilderUuid){
                 throw new Error('Download failed');
             }
             const events_data = await downloadResponse.json();
-            
-            for (const event of events_data) { //TODO: make this into js syntax
-                console.log(event);
-                const eventElement = document.createElement('div');
-                eventElement.innerHTML = `
-                    <a href="${event.gcal_link}" class="block w-full text-center bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors mb-3">Add to Google Calendar</a>
-                    <a href="${event.outlook_link}" class="block w-full text-center bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors mb-3">Add to Outlook</a>
-                    <p class="text-gray-600 text-center">ICS download coming soon!</p>
-                `;
-                console.log(eventElement.innerHTML);
 
-                resultLinks.appendChild(eventElement);
-                // TODO: make the ics so it actually downloads ics instead of saying coming soon
+            // clear out all previous created events from webpage
+            resultLinks.innerHTML = '';
+        
+            const cardsContainer = document.createElement('div');
+            cardsContainer.className = 'space-y-4';
+            
+            for (const event of events_data) {
+                // Create a truncated title (limit to 40 characters)
+                const truncatedTitle = event.summary.length > 40 
+                    ? event.summary.substring(0, 40) + '...' 
+                    : event.summary;
+                
+                // Create ICS download link using data URL
+                const sanitizedFilename = event.summary.replace(/[^a-z0-9]/gi, '_').slice(0, 30);
+                const base64Data = btoa(event.ics_data);
+                const dataUrl = `data:text/calendar;charset=utf-8;base64,${base64Data}`;
+                
+                const eventElement = document.createElement('div');
+                eventElement.className = 'bg-white shadow-md rounded-lg overflow-hidden border border-gray-200';
+                eventElement.innerHTML = `
+                    <div class="p-4 bg-gray-50 border-b border-gray-200">
+                        <h3 class="font-medium text-gray-900 text-lg truncate">${truncatedTitle}</h3>
+                    </div>
+                    <div class="p-4 grid grid-cols-3 gap-2">
+                        <a href="${event.gcal_link}" target="_blank" class="block text-center bg-green-500 text-white py-2 px-3 rounded hover:bg-green-600 transition-colors text-sm">Google Calendar</a>
+                        <a href="${event.outlook_link}" target="_blank" class="block text-center bg-blue-700 text-white py-2 px-3 rounded hover:bg-blue-800 transition-colors text-sm">Outlook</a>
+                        <a href="${dataUrl}" download="event_${sanitizedFilename}.ics" class="block text-center bg-red-500 text-white py-2 px-3 rounded hover:bg-red-600 transition-colors text-sm">Download ICS</a>
+                    </div>
+                `;
+                
+                cardsContainer.appendChild(eventElement);
             }
             
+            resultLinks.appendChild(cardsContainer);
             show_button_loading(false);
             
         }  else if (buildStatus.event_builder_status === 'STARTED') {
