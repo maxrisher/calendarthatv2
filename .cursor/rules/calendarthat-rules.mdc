@@ -1,0 +1,9 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+
+# Rule content
+
+- Whenever asked to implement a feature, never write code immediately. Instead, suggest an approach to solve the problem. The most likely thing to happen next is that the user will ask you to write pseudocode.
