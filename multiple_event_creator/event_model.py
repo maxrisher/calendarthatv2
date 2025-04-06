@@ -92,9 +92,11 @@ class Event(models.Model):
         return {
             "uuid": str(self.uuid),
             "summary": self.summary,
-            # "builder": self.builder.id if self.builder else None,
             "built_at": self.built_at.isoformat() if self.built_at else None,
-            "custom_user": self.custom_user.id if self.custom_user else None,
+
+            # Commented out because we don't need to expose these to the frontend and they were causing an error, see issue #55 in GitHub
+            # "builder": self.builder.id if self.builder else None,
+            # "custom_user": self.custom_user.id if self.custom_user else None,
             
             # Date/time fields
             "start_date": self.start_date.isoformat() if self.start_date else None,
