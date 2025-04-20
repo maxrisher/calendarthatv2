@@ -21,6 +21,9 @@ async def home(request):
     user = await request.auser()
     return render(request, 'web_interface/home.html', {'user': user})
 
+# NB: Mallicious websites will be able to make requests through our users to this endpoint
+# Works for both web version and browser extension version
+@csrf_exempt
 async def create_events_web(request):
     """
     [INTERFACE] Initiates asynchronous calendar event creation process
@@ -113,3 +116,11 @@ async def download_multiple_events(request):
         return JsonResponse({
             "error": "Unexpected error occured"
         }, status=500)
+        
+async def check_auth(request):
+    user = await request.auser()
+    
+    if user.is_authenticated:
+        return JsonResponse({"message": "Authenticated"}, status=200) 
+    else:
+        return JsonResponse({"error": "Not authenticated"}, status=401) 
